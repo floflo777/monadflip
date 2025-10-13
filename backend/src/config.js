@@ -15,7 +15,11 @@ export default {
   nodeEnv: process.env.NODE_ENV || 'development',
   
   contractABI: [
-    "event GameResolved(uint256 indexed gameId, address indexed winner, bool result, uint256 payout)",
-    "event ReferralReward(address indexed referrer, uint256 amount, uint256 indexed gameId)"
+    "event GameCreated(uint256 indexed gameId, address indexed player1, uint256 betAmount, bool player1Choice, uint256 expirationTime, address referrer, uint256 timestamp)",
+    "event GameJoined(uint256 indexed gameId, address indexed player2, uint256 timestamp)",
+    "event GameResolved(uint256 indexed gameId, address indexed winner, bool result, uint256 payout, uint256 timestamp)",
+    "event GameCancelled(uint256 indexed gameId, address indexed player1, uint256 timestamp)",
+    "event GameExpired(uint256 indexed gameId, uint256 timestamp)",
+    "event ReferralReward(address indexed referrer, uint256 amount, uint256 indexed gameId, uint256 timestamp)"
   ]
 };

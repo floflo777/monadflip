@@ -113,11 +113,9 @@ async function pollEvents() {
 
 async function handleGameResolved(event) {
   try {
-    const [gameId, winner, result, payout] = event.args;
+    const [gameId, winner, result, payout, timestamp] = event.args;
     
     console.log(`Game ${gameId} resolved - Winner: ${winner.slice(0, 8)}...`);
-
-    const block = await event.getBlock();
 
     const payoutNum = parseFloat(ethers.formatEther(payout));
     const betAmount = ethers.parseEther((payoutNum / 1.985).toFixed(18));
@@ -129,7 +127,7 @@ async function handleGameResolved(event) {
       payout,
       result,
       txHash: event.transactionHash,
-      timestamp: block.timestamp
+      timestamp: Number(timestamp)
     };
 
     updateStats(gameData);
@@ -141,18 +139,16 @@ async function handleGameResolved(event) {
 
 async function handleReferralReward(event) {
   try {
-    const [referrer, amount, gameId] = event.args;
+    const [referrer, amount, gameId, timestamp] = event.args;
     
     console.log(`Referral reward: ${ethers.formatEther(amount)} MON to ${referrer.slice(0, 8)}...`);
-
-    const block = await event.getBlock();
 
     const rewardData = {
       referrer,
       amount,
       gameId,
       txHash: event.transactionHash,
-      timestamp: block.timestamp
+      timestamp: Number(timestamp)
     };
 
     addReferralReward(rewardData);
