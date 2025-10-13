@@ -21,6 +21,12 @@ export function updateStats(gameData) {
     
     stmt.run(newVolume.toString(), timestamp);
 
+    const insertMetric = db.prepare(`
+      INSERT INTO daily_metrics (volume, timestamp)
+      VALUES (?, ?)
+    `);
+    insertMetric.run(payoutValue.toString(), timestamp);
+
     const insertPlayer = db.prepare(`
       INSERT OR IGNORE INTO players (address, first_seen) 
       VALUES (?, ?)
@@ -29,11 +35,14 @@ export function updateStats(gameData) {
 
     const playerCount = db.prepare('SELECT COUNT(*) as count FROM players').get().count;
     db.prepare('UPDATE protocol_stats SET total_players = ? WHERE id = 1').run(playerCount);
+
+    const oneDayAgo = Math.floor(Date.now() / 1000) - 86400;
+    db.prepare('DELETE FROM daily_metrics WHERE timestamp < ?').run(oneDayAgo);
   });
 
   try {
     transaction();
-    console.log(`✅ Stats updated: +${ethers.formatEther(payout)} MON, Total: ${parseFloat(db.prepare('SELECT total_volume FROM protocol_stats WHERE id = 1').get().total_volume).toFixed(2)} MON`);
+    console.log(`Stats updated: +${ethers.formatEther(payout)} MON`);
   } catch (error) {
     console.error('Error updating stats:', error);
     throw error;
@@ -115,14 +124,14 @@ export function getStats() {
   const oneDayAgo = Math.floor(Date.now() / 1000) - 86400;
   
   const volume24h = db.prepare(`
-    SELECT COALESCE(SUM(CAST(payout AS REAL)), 0) as volume
-    FROM recent_games
+    SELECT COALESCE(SUM(CAST(volume AS REAL)), 0) as volume
+    FROM daily_metrics
     WHERE timestamp >= ?
   `).get(oneDayAgo).volume;
 
   const games24h = db.prepare(`
     SELECT COUNT(*) as count
-    FROM recent_games
+    FROM daily_metrics
     WHERE timestamp >= ?
   `).get(oneDayAgo).count;
 

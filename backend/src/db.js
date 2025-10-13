@@ -30,6 +30,14 @@ db.exec(`
   INSERT OR IGNORE INTO protocol_stats (id, total_volume, total_games, total_players)
   VALUES (1, '0', 0, 0);
 
+  CREATE TABLE IF NOT EXISTS daily_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    volume TEXT NOT NULL,
+    timestamp INTEGER NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_daily_metrics_timestamp ON daily_metrics(timestamp DESC);
+
   CREATE TABLE IF NOT EXISTS recent_games (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     game_id INTEGER NOT NULL,
