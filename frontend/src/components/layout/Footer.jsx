@@ -3,23 +3,24 @@ import { CONTRACT_ADDRESS, MONAD_EXPLORER } from '../../utils/constants';
 
 export default function Footer() {
   return (
-    <footer className="bg-primary mt-16 py-8">
+    <footer className="glass-strong border-t border-white/10 mt-16 py-8">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Left - Logo/Name */}
           <div className="text-white">
-            <h3 className="text-xl font-bold">Coinflip on Monad</h3>
-            <p className="text-sm text-gray-300 mt-1">Fair, Fast, On-Chain</p>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              MonadFlip
+            </h3>
+            <p className="text-sm text-gray-400 mt-1">Fair, Fast, On-Chain</p>
           </div>
 
           {/* Center - Social Links */}
           <div className="flex items-center gap-6">
-            {/* Contract Link */}
             <a
-              href={`https://monad-testnet.socialscan.io/address/0xDa1615e13b9CE084fB16A60D6989Ed572CB3eb77`}
+              href={`https://monad-testnet.socialscan.io/address/${CONTRACT_ADDRESS}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-accent transition group"
+              className="flex items-center gap-2 text-gray-400 hover:text-accent transition group"
               title="View Contract"
             >
               <svg 
@@ -32,12 +33,11 @@ export default function Footer() {
               <span className="text-sm hidden md:inline">Contract</span>
             </a>
 
-            {/* Twitter/X */}
             <a
               href="https://x.com/Florent574421"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-accent transition group"
+              className="flex items-center gap-2 text-gray-400 hover:text-accent transition group"
               title="Follow on X"
             >
               <svg 
@@ -50,12 +50,11 @@ export default function Footer() {
               <span className="text-sm hidden md:inline">Twitter</span>
             </a>
 
-            {/* GitHub */}
             <a
               href="https://github.com/floflo777/monadflip"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-accent transition group"
+              className="flex items-center gap-2 text-gray-400 hover:text-accent transition group"
               title="View on GitHub"
             >
               <svg 
@@ -70,23 +69,23 @@ export default function Footer() {
           </div>
 
           {/* Right - Copyright */}
-          <div className="text-white text-sm text-center md:text-right">
-            <p className="text-gray-300">Built on Monad</p>
-            <p className="text-xs text-gray-400 mt-1">© 2025 MonadFlip</p>
+          <div className="text-gray-400 text-sm text-center md:text-right">
+            <p className="text-gray-500">Built on Monad</p>
+            <p className="text-xs text-gray-600 mt-1">© 2025 MonadFlip</p>
           </div>
         </div>
 
         {/* Bottom - Contract Address */}
-        <div className="mt-6 pt-4 border-t border-white/10 text-center">
-          <p className="text-xs text-gray-400"> 
+        <div className="mt-6 pt-4 border-t border-white/5 text-center">
+          <p className="text-xs text-gray-500"> 
             Contract: 
             <a
-              href={`https://monad-testnet.socialscan.io/address/0xDa1615e13b9CE084fB16A60D6989Ed572CB3eb77`}
+              href={`https://monad-testnet.socialscan.io/address/${CONTRACT_ADDRESS}`}
               target="_blank"
               rel="noopener noreferrer"
               className="ml-2 text-accent hover:text-white transition font-mono"
             >
-              0xDa1615e13b9CE084fB16A60D6989Ed572CB3eb77
+              {CONTRACT_ADDRESS}
             </a>
           </p>
         </div>

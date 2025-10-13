@@ -11,44 +11,59 @@ export default function Header() {
   const isCorrectNetwork = chainId === MONAD_CHAIN_ID;
 
   return (
-    <header className="bg-primary h-[15vh] flex items-center justify-between px-8">
-      <button
-        onClick={() => setShowCreateModal(true)}
-        className="bg-primary-dark text-white px-6 py-3 rounded-full text-xl font-bold hover:bg-opacity-90 transition"
-      >
-        Create Game
-      </button>
+    <header className="glass-strong border-b border-white/10 sticky top-0 z-40">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <span className="text-2xl">🎲</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary">
+                MonadFlip
+              </h1>
+              <p className="text-xs text-gray-400">Double or Nothing</p>
+            </div>
+          </div>
 
-      <h1 className="text-white text-4xl font-bold flex-1 text-center">
-        Coinflip on Monad
-      </h1>
-
-      <div className="flex items-center gap-4">
-        {MONAD_FAUCET && (
-            <a
-            href={MONAD_FAUCET}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-accent text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-opacity-90 transition"
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="glass px-6 py-3 rounded-xl font-bold text-white hover:glass-strong transition-all glow-primary"
             >
-            Get MON
-            </a>
-        )}
+              Create Game
+            </button>
 
-        {account && !isCorrectNetwork && (
-          <button
-            onClick={switchNetwork}
-            className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-red-600 transition" >
-            Switch Network
-          </button>
-        )}
+            {MONAD_FAUCET && (
+              <a
+                href={MONAD_FAUCET}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass px-4 py-3 rounded-xl text-sm font-semibold text-accent hover:glass-strong transition-all"
+              >
+                Get MON
+              </a>
+            )}
 
-        <button
-          onClick={connectWallet}
-          className="bg-primary-dark text-white px-6 py-3 rounded-full text-xl font-bold hover:bg-opacity-90 transition whitespace-nowrap"
-        >
-          {account ? shortAddress(account) : 'Connect'}
-        </button>
+            {account && !isCorrectNetwork && (
+              <button
+                onClick={switchNetwork}
+                className="glass px-4 py-3 rounded-xl text-sm font-bold text-red-400 hover:glass-strong transition-all"
+              >
+                Switch Network
+              </button>
+            )}
+
+            <button
+              onClick={connectWallet}
+              className="glass-strong px-6 py-3 rounded-xl font-bold text-white hover:glow-accent transition-all"
+            >
+              {account ? shortAddress(account) : 'Connect Wallet'}
+            </button>
+          </div>
+        </div>
       </div>
     </header>
   );

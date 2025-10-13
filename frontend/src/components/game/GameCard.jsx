@@ -8,6 +8,31 @@ import toast from 'react-hot-toast';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
+// Helper functions for amount color coding
+const getAmountClass = (amount) => {
+  const num = parseFloat(amount);
+  if (num < 0.01) return 'amount-micro';
+  if (num < 0.1) return 'amount-low';
+  if (num < 1) return 'amount-medium';
+  if (num < 10) return 'amount-high';
+  return 'amount-whale';
+};
+
+const getAmountGlow = (amount) => {
+  const num = parseFloat(amount);
+  if (num >= 10) return 'pulse-high-stakes';
+  if (num >= 1) return 'glow-accent';
+  return '';
+};
+
+const getAmountBadge = (amount) => {
+  const num = parseFloat(amount);
+  if (num >= 10) return { text: 'WHALE', color: 'bg-purple-500/20 text-purple-300 border-purple-500/50' };
+  if (num >= 1) return { text: 'HIGH', color: 'bg-red-500/20 text-red-300 border-red-500/50' };
+  if (num >= 0.1) return { text: 'MED', color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50' };
+  return null;
+};
+
 export default function GameCard({ game, isMyGame = false, section = null }) {
   const { contract, account } = useWeb3();
   const { setShowAnimation, setFlipResult, setResultMessage } = useGameStore();
@@ -18,8 +43,9 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
       toast.error('Please connect your wallet first', {
         duration: 4000,
         style: {
-          background: '#14044d',
+          background: 'rgba(15, 23, 42, 0.95)',
           color: '#fff',
+          border: '1px solid rgba(99, 102, 241, 0.3)',
         },
       });
       return;
@@ -32,8 +58,9 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
 
     const toastId = toast.loading('Waiting for wallet confirmation...', {
       style: {
-        background: '#14044d',
+        background: 'rgba(15, 23, 42, 0.95)',
         color: '#fff',
+        border: '1px solid rgba(99, 102, 241, 0.3)',
       },
     });
 
@@ -75,8 +102,10 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
           id: toastId,
           duration: 8000,
           style: {
-            background: 'linear-gradient(135deg, #4FD1C5 0%, #38B2AC 100%)',
+            background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%)',
+            backdropFilter: 'blur(10px)',
             color: '#fff',
+            border: '1px solid rgba(34, 211, 238, 0.5)',
           },
         });
       } else {
@@ -85,8 +114,9 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
           id: toastId,
           duration: 6000,
           style: {
-            background: '#14044d',
+            background: 'rgba(15, 23, 42, 0.95)',
             color: '#fff',
+            border: '1px solid rgba(248, 113, 113, 0.5)',
           },
         });
       }
@@ -119,7 +149,13 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
   const handleCancel = async () => {
     if (!contract) return;
 
-    const toastId = toast.loading('Cancelling game...');
+    const toastId = toast.loading('Cancelling game...', {
+      style: {
+        background: 'rgba(15, 23, 42, 0.95)',
+        color: '#fff',
+        border: '1px solid rgba(99, 102, 241, 0.3)',
+      },
+    });
 
     try {
       const tx = await contract.cancelGame(game.gameId);
@@ -138,7 +174,13 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
   const handleWithdraw = async () => {
     if (!contract) return;
 
-    const toastId = toast.loading('Withdrawing funds...');
+    const toastId = toast.loading('Withdrawing funds...', {
+      style: {
+        background: 'rgba(15, 23, 42, 0.95)',
+        color: '#fff',
+        border: '1px solid rgba(99, 102, 241, 0.3)',
+      },
+    });
 
     try {
       const tx = await contract.withdrawExpired(game.gameId);
@@ -156,28 +198,35 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
 
   const timeLeft = formatTimeLeft(game.expirationTime);
   const isExpiringSoon = game.expirationTime - Math.floor(Date.now() / 1000) < 3600;
-  const isExpired = game.expirationTime - Math.floor(Date.now() / 1000) <= 0;
-  const isCreator = account && game.player1.toLowerCase() === account.toLowerCase();
-  const isWaiting = game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
+  const badge = getAmountBadge(game.betAmount);
 
-  // Rendu pour My Games avec section
+  // Rendu pour My Games avec sections
   if (isMyGame) {
     if (section === 'expired') {
       return (
-        <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-orange-500">
+        <div className={`glass-card rounded-2xl p-6 flex items-center justify-between text-white border-2 border-orange-500/50 transition-all ${getAmountGlow(game.betAmount)}`}>
           <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-bold bg-orange-500/20 px-3 py-1 rounded-full border border-orange-500/50">
+                EXPIRED
+              </span>
+              {badge && (
+                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${badge.color}`}>
+                  {badge.text}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">EXPIRED</span>
               <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
             </div>
-            <p className="text-sm text-white/90 mt-1">
-              {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
+            <p className="text-sm text-gray-300 mt-1">
+              {game.player1Choice ? 'Heads' : 'Tails'} | <span className={getAmountClass(game.betAmount)}>{formatAmount(game.betAmount)} MON</span>
             </p>
           </div>
 
           <button
             onClick={handleWithdraw}
-            className="bg-white text-orange-600 px-8 py-4 rounded-full text-xl font-bold hover:bg-opacity-90 transition whitespace-nowrap shadow-lg"
+            className="glass-strong px-8 py-4 rounded-xl text-lg font-bold hover:glow-accent transition-all transform hover:scale-105"
           >
             Withdraw
           </button>
@@ -187,23 +236,34 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
 
     if (section === 'active') {
       return (
-        <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-primary">
+        <div className={`glass-card rounded-2xl p-6 flex items-center justify-between text-white transition-all ${getAmountGlow(game.betAmount)}`}>
           <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-bold bg-primary/20 px-3 py-1 rounded-full border border-primary/50">
+                ACTIVE
+              </span>
+              {badge && (
+                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${badge.color}`}>
+                  {badge.text}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">ACTIVE</span>
               <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
             </div>
             <p className="text-sm text-gray-300 mt-1">
-              {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
+              {game.player1Choice ? 'Heads' : 'Tails'} | <span className={getAmountClass(game.betAmount)}>{formatAmount(game.betAmount)} MON</span>
             </p>
-            <p className={`text-xs mt-2 ${isExpiringSoon ? 'text-orange-300' : 'text-gray-400'}`}>
-              {isExpiringSoon && 'Expires in ' + timeLeft}
-            </p>
+            {isExpiringSoon && (
+              <p className="text-xs mt-2 text-orange-400 font-semibold">
+                Expires in {timeLeft}
+              </p>
+            )}
           </div>
 
           <button
             onClick={handleCancel}
-            className="bg-primary-dark px-8 py-4 rounded-full text-xl font-bold hover:bg-opacity-90 transition whitespace-nowrap shadow-lg"
+            className="glass px-8 py-4 rounded-xl text-lg font-bold hover:glass-strong transition-all"
           >
             Cancel
           </button>
@@ -213,17 +273,26 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
 
     // Section playing
     return (
-      <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-accent">
+      <div className={`glass-card rounded-2xl p-6 flex items-center justify-between text-white border-2 border-accent/50 transition-all ${getAmountGlow(game.betAmount)}`}>
         <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-bold bg-accent/20 px-3 py-1 rounded-full border border-accent/50">
+              IN PROGRESS
+            </span>
+            {badge && (
+              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${badge.color}`}>
+                {badge.text}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">IN PROGRESS</span>
             <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
           </div>
-          <p className="text-sm text-white/90 mt-1">
-            {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
+          <p className="text-sm text-gray-300 mt-1">
+            {game.player1Choice ? 'Heads' : 'Tails'} | <span className={getAmountClass(game.betAmount)}>{formatAmount(game.betAmount)} MON</span>
           </p>
-          <p className="text-xs mt-2 text-white/80">
-            Playing vs {shortAddress(game.player2)}
+          <p className="text-xs mt-2 text-accent">
+            vs {shortAddress(game.player2)}
           </p>
         </div>
       </div>
@@ -232,22 +301,36 @@ export default function GameCard({ game, isMyGame = false, section = null }) {
 
   // Rendu pour All Games
   return (
-    <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-primary">
+    <div className={`glass-card rounded-2xl p-6 flex items-center justify-between text-white hover:glass-strong transition-all group ${getAmountGlow(game.betAmount)}`}>
       <div className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          {badge && (
+            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${badge.color}`}>
+              {badge.text}
+            </span>
+          )}
+          {isExpiringSoon && (
+            <span className="text-xs font-bold bg-orange-500/20 px-3 py-1 rounded-full border border-orange-500/50">
+              EXPIRING SOON
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
         </div>
         <p className="text-sm text-gray-300 mt-1">
-          {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
+          {game.player1Choice ? 'Heads' : 'Tails'} | <span className={getAmountClass(game.betAmount)}>{formatAmount(game.betAmount)} MON</span>
         </p>
-        <p className={`text-xs mt-2 ${isExpiringSoon ? 'text-orange-300' : 'text-gray-400'}`}>
-          {isExpiringSoon && 'Expires in ' + timeLeft}
-        </p>
+        {isExpiringSoon && (
+          <p className="text-xs mt-2 text-orange-400">
+            {timeLeft} left
+          </p>
+        )}
       </div>
 
       <button
         onClick={handleJoin}
-        className="bg-primary-dark px-8 py-4 rounded-full text-xl font-bold hover:bg-opacity-90 transition whitespace-nowrap shadow-lg"
+        className="glass-strong px-8 py-4 rounded-xl text-lg font-bold hover:glow-accent transition-all transform group-hover:scale-105"
       >
         Join Game
       </button>
