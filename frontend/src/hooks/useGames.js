@@ -5,9 +5,14 @@ import { ethers } from 'ethers';
 
 export const useGames = () => {
   const { contract, account, provider } = useWeb3();
-  const { setGames, setMyGames, setLoading } = useGameStore();
+  const { setGames, setMyGames, setLoading, isTransactionPending } = useGameStore();
 
   const loadGames = useCallback(async () => {
+    if (isTransactionPending) {
+      console.log('Transaction pending, skipping reload');
+      return;
+    }
+
     const readContract = contract || provider?.contract;
     if (!readContract) return;
 
@@ -38,10 +43,10 @@ export const useGames = () => {
       console.error('Error loading games:', error);
     }
     setLoading(false);
-  }, [contract, provider, setGames, setLoading]);
+  }, [contract, provider, setGames, setLoading, isTransactionPending]);
 
   const loadMyGames = useCallback(async () => {
-    if (!contract || !account) return;
+    if (!contract || !account || isTransactionPending) return;
 
     try {
       const myGameIds = await contract.getMyGames(account);
@@ -68,7 +73,7 @@ export const useGames = () => {
     } catch (error) {
       console.error('Error loading my games:', error);
     }
-  }, [contract, account, setMyGames]);
+  }, [contract, account, setMyGames, isTransactionPending]);
 
   useEffect(() => {
     if (contract || provider?.contract) {
@@ -82,23 +87,23 @@ export const useGames = () => {
         const filterCancelled = contract.filters.GameCancelled();
 
         contract.on(filterCreated, () => {
-          setTimeout(loadGames, 1000);
-          setTimeout(loadMyGames, 1000);
+          setTimeout(loadGames, 2000);
+          setTimeout(loadMyGames, 2000);
         });
 
         contract.on(filterJoined, () => {
-          setTimeout(loadGames, 1000);
-          setTimeout(loadMyGames, 1000);
+          setTimeout(loadGames, 2000);
+          setTimeout(loadMyGames, 2000);
         });
 
         contract.on(filterResolved, () => {
-          setTimeout(loadGames, 1000);
-          setTimeout(loadMyGames, 1000);
+          setTimeout(loadGames, 2000);
+          setTimeout(loadMyGames, 2000);
         });
 
         contract.on(filterCancelled, () => {
-          setTimeout(loadGames, 1000);
-          setTimeout(loadMyGames, 1000);
+          setTimeout(loadGames, 2000);
+          setTimeout(loadMyGames, 2000);
         });
 
         return () => {

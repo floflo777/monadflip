@@ -33,6 +33,7 @@ export function updateStats(gameData) {
 
   try {
     transaction();
+    console.log(`✅ Stats updated: +${ethers.formatEther(payout)} MON, Total: ${parseFloat(db.prepare('SELECT total_volume FROM protocol_stats WHERE id = 1').get().total_volume).toFixed(2)} MON`);
   } catch (error) {
     console.error('Error updating stats:', error);
     throw error;
@@ -40,9 +41,12 @@ export function updateStats(gameData) {
 }
 
 export function addRecentGame(gameData) {
-  const { gameId, winner, betAmount, payout, result, txHash, timestamp } = gameData;
+  const { gameId, winner, payout, result, txHash, timestamp } = gameData;
 
   const transaction = db.transaction(() => {
+    const payoutValue = ethers.formatEther(payout);
+    const betValue = (parseFloat(payoutValue) / 1.985).toFixed(6);
+
     const insert = db.prepare(`
       INSERT OR IGNORE INTO recent_games 
       (game_id, winner, bet_amount, payout, result, tx_hash, timestamp)
@@ -52,8 +56,8 @@ export function addRecentGame(gameData) {
     insert.run(
       gameId.toString(),
       winner.toLowerCase(),
-      ethers.formatEther(betAmount),
-      ethers.formatEther(payout),
+      betValue,
+      payoutValue,
       result ? 1 : 0,
       txHash,
       timestamp
@@ -125,7 +129,7 @@ export function getStats() {
   return {
     volume24h: volume24h.toFixed(2),
     gamesToday: games24h,
-    totalFlipped: parseFloat(stats.total_volume).toFixed(0),
+    totalFlipped: parseFloat(stats.total_volume).toFixed(2),
     totalPlayers: stats.total_players
   };
 }

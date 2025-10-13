@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 export default function GameCard({ game, featured = false }) {
   const { contract, account } = useWeb3();
-  const { setShowAnimation, setFlipResult, setResultMessage } = useGameStore();
+  const { setShowAnimation, setFlipResult, setResultMessage, setIsTransactionPending } = useGameStore();
 
   const handleJoin = async () => {
     if (!account) {
@@ -25,6 +25,8 @@ export default function GameCard({ game, featured = false }) {
       toast.error('Please connect your wallet');
       return;
     }
+
+    setIsTransactionPending(true);
 
     const toastId = toast.loading('Waiting for wallet confirmation...', {
       style: {
@@ -94,9 +96,11 @@ export default function GameCard({ game, featured = false }) {
         setShowAnimation(false);
         setFlipResult(null);
         setResultMessage('');
-      }, 5000);
+        setIsTransactionPending(false);
+      }, 6000);
     } catch (error) {
       console.error('Join game error:', error);
+      setIsTransactionPending(false);
       
       if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
         toast.error('Transaction rejected', { id: toastId });
