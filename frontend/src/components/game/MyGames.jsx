@@ -3,7 +3,6 @@ import { useWeb3 } from '../../context/Web3Context';
 import { useGameStore } from '../../hooks/useGameStore';
 import { useGames } from '../../hooks/useGames';
 import { shortAddress, formatAmount, formatTimeLeft } from '../../utils/formatting';
-import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -16,13 +15,11 @@ export default function MyGames() {
   useEffect(() => {
     if (account) {
       loadMyGames();
-      // Refresh toutes les 30 secondes pour détecter les expirations
       const interval = setInterval(loadMyGames, 30000);
       return () => clearInterval(interval);
     }
   }, [account, loadMyGames]);
 
-  // Notification pour parties expirées
   useEffect(() => {
     if (!account || !myGames.length) return;
 
@@ -35,7 +32,7 @@ export default function MyGames() {
     });
 
     if (hasExpired) {
-      toast('⚠️ You have expired games to withdraw!', {
+      toast('You have expired games to withdraw!', {
         duration: 8000,
       });
     }
@@ -44,34 +41,34 @@ export default function MyGames() {
   const handleCancel = async (gameId) => {
     if (!contract) return;
 
-    const toastId = toast.loading('⟳ Cancelling game...');
+    const toastId = toast.loading('Cancelling game...');
 
     try {
       const tx = await contract.cancelGame(gameId);
-      toast.loading('⟳ Transaction pending...', { id: toastId });
+      toast.loading('Transaction pending...', { id: toastId });
       await tx.wait();
-      toast.success('✨ Game cancelled!', { id: toastId });
+      toast.success('Game cancelled!', { id: toastId });
       loadMyGames();
     } catch (error) {
       console.error('Cancel error:', error);
-      toast.error(`⚠ ${error.reason || 'Failed to cancel'}`, { id: toastId });
+      toast.error(`${error.reason || 'Failed to cancel'}`, { id: toastId });
     }
   };
 
   const handleWithdraw = async (gameId) => {
     if (!contract) return;
 
-    const toastId = toast.loading('⟳ Withdrawing funds...');
+    const toastId = toast.loading('Withdrawing funds...');
 
     try {
       const tx = await contract.withdrawExpired(gameId);
-      toast.loading('⟳ Transaction pending...', { id: toastId });
+      toast.loading('Transaction pending...', { id: toastId });
       await tx.wait();
-      toast.success('✨ Funds withdrawn!', { id: toastId });
+      toast.success('Funds withdrawn!', { id: toastId });
       loadMyGames();
     } catch (error) {
       console.error('Withdraw error:', error);
-      toast.error(`⚠ ${error.reason || 'Failed to withdraw'}`, { id: toastId });
+      toast.error(`${error.reason || 'Failed to withdraw'}`, { id: toastId });
     }
   };
 
@@ -84,7 +81,6 @@ export default function MyGames() {
     );
   }
 
-  // Séparer les parties actives et expirées
   const now = Math.floor(Date.now() / 1000);
   
   const expiredGames = myGames.filter(game => {
@@ -113,11 +109,10 @@ export default function MyGames() {
         <p className="text-gray-500 text-sm">No active games</p>
       ) : (
         <div className="space-y-4">
-          {/* Parties expirées (PRIORITÉ) */}
           {expiredGames.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold text-orange-500 uppercase">⚠️ Expired - Withdraw Now</span>
+                <span className="text-xs font-bold text-orange-500 uppercase">Expired - Withdraw Now</span>
               </div>
               <div className="space-y-3">
                 {expiredGames.map((game) => (
@@ -148,7 +143,6 @@ export default function MyGames() {
             </div>
           )}
 
-          {/* Parties actives */}
           {activeGames.length > 0 && (
             <div>
               {expiredGames.length > 0 && (
@@ -172,7 +166,7 @@ export default function MyGames() {
                           </p>
                         </div>
                         <span className={`text-xs ${isExpiringSoon ? 'text-orange-500' : 'text-gray-400'}`}>
-                          {isExpiringSoon && '⚠️ '}
+                          {isExpiringSoon && 'WARNING '}
                           {formatTimeLeft(game.expirationTime)}
                         </span>
                       </div>
@@ -190,7 +184,6 @@ export default function MyGames() {
             </div>
           )}
 
-          {/* Parties en cours (avec opponent) */}
           {playingGames.length > 0 && (
             <div>
               {(expiredGames.length > 0 || activeGames.length > 0) && (
@@ -212,7 +205,7 @@ export default function MyGames() {
                       </div>
                     </div>
                     <p className="text-xs text-accent font-semibold mt-2">
-                      🎲 Playing vs {shortAddress(game.player2)}
+                      Playing vs {shortAddress(game.player2)}
                     </p>
                   </div>
                 ))}

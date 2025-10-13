@@ -40,3 +40,5 @@ coverage/
 .eslintcache
 .stylelintcache
 .vercel
+
+cat.sh

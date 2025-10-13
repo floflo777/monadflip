@@ -15,7 +15,7 @@ export default function GameCard({ game, featured = false }) {
       return;
     }
 
-    const toastId = toast.loading('⟳ Waiting for wallet confirmation...', {
+    const toastId = toast.loading('Waiting for wallet confirmation...', {
       style: {
         background: '#14044d',
         color: '#fff',
@@ -27,7 +27,7 @@ export default function GameCard({ game, featured = false }) {
         value: ethers.parseEther(game.betAmount)
       });
 
-      toast.loading('⟳ Transaction pending...', { id: toastId });
+      toast.loading('Transaction pending...', { id: toastId });
 
       await tx.wait();
 
@@ -49,7 +49,7 @@ export default function GameCard({ game, featured = false }) {
       let message = '';
       if (account.toLowerCase() === winner.toLowerCase()) {
         const winAmount = (betNum * 1.999).toFixed(4);
-        message = `✨ You won ${winAmount} MON!`;
+        message = `You won ${winAmount} MON!`;
         toast.success(message, { 
           id: toastId,
           duration: 6000,
@@ -59,7 +59,7 @@ export default function GameCard({ game, featured = false }) {
         });
       } else {
         message = `You lost ${game.betAmount} MON`;
-        toast.error(`◐ ${message}\nBetter luck next time!`, { 
+        toast.error(`${message}\nBetter luck next time!`, { 
           id: toastId,
           duration: 4000,
           style: {
@@ -79,7 +79,7 @@ export default function GameCard({ game, featured = false }) {
       }, 5000);
     } catch (error) {
       console.error('Join game error:', error);
-      toast.error(`⚠ ${error.reason || 'Transaction failed'}`, { id: toastId });
+      toast.error(`${error.reason || 'Transaction failed'}`, { id: toastId });
     }
   };
 
@@ -95,7 +95,6 @@ export default function GameCard({ game, featured = false }) {
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
-          {featured && <span className="text-accent text-sm"></span>}
         </div>
         <p className="text-sm text-gray-300 mt-1">
           {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON

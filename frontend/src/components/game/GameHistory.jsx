@@ -20,7 +20,7 @@ export default function GameHistory() {
 
   return (
     <div className="bg-white rounded-2xl p-6">
-      <h3 className="text-xl font-bold text-primary mb-4">📜 Recent Games</h3>
+      <h3 className="text-xl font-bold text-primary mb-4"> Recent Games</h3>
       
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {history.map((game) => {

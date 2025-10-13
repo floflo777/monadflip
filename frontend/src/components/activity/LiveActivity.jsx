@@ -1,41 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { useWeb3 } from '../../context/Web3Context';
 import { shortAddress, formatAmount } from '../../utils/formatting';
-import { ethers } from 'ethers';
+import { API_URL } from '../../utils/constants';
 
 export default function LiveActivity() {
-  const { contract } = useWeb3();
   const [activities, setActivities] = useState([]);
 
   useEffect(() => {
-    if (!contract) return;
+    loadActivities();
+    const interval = setInterval(loadActivities, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-    const handleGameResolved = (gameId, winner, result, payout, event) => {
-      try {
-        // Convertir proprement les valeurs
-        const newActivity = {
-          id: event.log.transactionHash,
-          winner: winner.toString(),
-          amount: ethers.formatEther(payout.toString()),
-          choice: result ? 'Heads' : 'Tails',
-          timestamp: Date.now()
-        };
-
-        setActivities(prev => {
-          if (prev.find(a => a.id === newActivity.id)) return prev;
-          return [newActivity, ...prev].slice(0, 10);
-        });
-      } catch (error) {
-        // Ignore silencieusement les erreurs de parsing
+  const loadActivities = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/live-activity`);
+      if (response.ok) {
+        const data = await response.json();
+        setActivities(data.map(game => ({
+          id: game.txHash,
+          winner: game.winner,
+          amount: game.payout,
+          choice: game.result ? 'Heads' : 'Tails',
+          timestamp: game.timestamp * 1000
+        })));
       }
-    };
-
-    contract.on('GameResolved', handleGameResolved);
-
-    return () => {
-      contract.off('GameResolved', handleGameResolved);
-    };
-  }, [contract]);
+    } catch (error) {
+      console.error('Error loading activities:', error);
+    }
+  };
 
   const getTimeAgo = (timestamp) => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -67,7 +59,7 @@ export default function LiveActivity() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-accent font-semibold">↑</span>
+                    <span className="text-accent font-semibold">Winner:</span>
                     <span className="text-sm font-semibold text-primary">
                       {shortAddress(activity.winner)}
                     </span>
@@ -76,11 +68,11 @@ export default function LiveActivity() {
                     Won {formatAmount(activity.amount)} MON
                   </div>
                   <div className="text-xs text-gray-400">
-                    {activity.choice} · {getTimeAgo(activity.timestamp)}
+                    {activity.choice} - {getTimeAgo(activity.timestamp)}
                   </div>
                 </div>
                 {parseFloat(activity.amount) >= 10 && (
-                  <span className="text-lg">🔥</span>
+                  <span className="text-lg">HIGH</span>
                 )}
               </div>
             </div>

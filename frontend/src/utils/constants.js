@@ -2,6 +2,7 @@ export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || '';
 export const MONAD_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID || '0');
 export const MONAD_EXPLORER = import.meta.env.VITE_MONAD_EXPLORER || '';
 export const MONAD_FAUCET = import.meta.env.VITE_MONAD_FAUCET || '';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const MIN_BET = '0.001';
 export const DURATION_OPTIONS = [

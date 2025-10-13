@@ -15,16 +15,16 @@ export default function CreateGameModal() {
 
   const handleCreate = async () => {
     if (!contract || !account) {
-      toast.error('⚠ Please connect your wallet');
+      toast.error('Please connect your wallet');
       return;
     }
 
     if (!betAmount || parseFloat(betAmount) < parseFloat(MIN_BET)) {
-      toast.error(`⚠ Minimum bet is ${MIN_BET} MON`);
+      toast.error(`Minimum bet is ${MIN_BET} MON`);
       return;
     }
 
-    const toastId = toast.loading('⟳ Creating game...');
+    const toastId = toast.loading('Creating game...');
 
     try {
       const weiAmount = ethers.parseEther(betAmount);
@@ -38,14 +38,14 @@ export default function CreateGameModal() {
         { value: weiAmount }
       );
 
-      toast.loading('⟳ Transaction pending...', { id: toastId });
+      toast.loading('Transaction pending...', { id: toastId });
       await tx.wait();
 
-      toast.success('✨ Game created successfully!', { id: toastId });
+      toast.success('Game created successfully!', { id: toastId });
       setShowCreateModal(false);
     } catch (error) {
       console.error('Create game error:', error);
-      toast.error(`⚠ ${error.reason || 'Failed to create game'}`, { id: toastId });
+      toast.error(`${error.reason || 'Failed to create game'}`, { id: toastId });
     }
   };
 

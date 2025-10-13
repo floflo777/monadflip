@@ -30,14 +30,6 @@ export const Web3Provider = ({ children }) => {
       const signer = await provider.getSigner();
       const network = await provider.getNetwork();
       
-      // DEBUG LOGS DÉSACTIVÉS POUR ÉVITER RATE LIMIT
-      // console.log('========== NETWORK DEBUG ==========');
-      // console.log('Connected Chain ID:', Number(network.chainId));
-      // console.log('Expected Chain ID:', MONAD_CHAIN_ID);
-      // console.log('Contract Address:', CONTRACT_ADDRESS);
-      // console.log('Account:', accounts[0]);
-      // console.log('===================================');
-      
       setAccount(accounts[0]);
       setProvider(provider);
       setSigner(signer);

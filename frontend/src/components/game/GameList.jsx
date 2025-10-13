@@ -26,7 +26,6 @@ export default function GameList() {
   useEffect(() => {
     let result = [...games];
 
-    // Filtre par catégorie
     if (selectedCategory.label !== 'All') {
       result = result.filter(g => {
         const amount = parseFloat(g.betAmount);
@@ -34,7 +33,6 @@ export default function GameList() {
       });
     }
 
-    // Filtres personnalisés
     if (filters.minBet) {
       result = result.filter(g => parseFloat(g.betAmount) >= parseFloat(filters.minBet));
     }
@@ -43,7 +41,6 @@ export default function GameList() {
       result = result.filter(g => parseFloat(g.betAmount) <= parseFloat(filters.maxBet));
     }
 
-    // Tri
     if (filters.sortBy === 'recent') {
       result.sort((a, b) => b.createTime - a.createTime);
     } else if (filters.sortBy === 'amount-asc') {
@@ -63,15 +60,13 @@ export default function GameList() {
   const currentGames = filteredGames.slice(indexOfFirstGame, indexOfLastGame);
   const totalPages = Math.ceil(filteredGames.length / gamesPerPage);
 
-  // Featured games (top 5)
   const featuredGames = filteredGames.slice(0, 5);
 
   return (
     <div className="space-y-6">
-      {/* Featured Games */}
       {featuredGames.length > 0 && (
         <div>
-          <h2 className="text-2xl font-bold text-primary mb-4"> Featured Games</h2>
+          <h2 className="text-2xl font-bold text-primary mb-4">Featured Games</h2>
           <div className="space-y-3">
             {featuredGames.map((game) => (
               <GameCard key={game.gameId} game={game} featured />
@@ -80,9 +75,8 @@ export default function GameList() {
         </div>
       )}
 
-      {/* Filters */}
       <div>
-        <h2 className="text-2xl font-bold text-primary mb-4"> All Games</h2>
+        <h2 className="text-2xl font-bold text-primary mb-4">All Games</h2>
         
         <StakeFilter 
           selectedCategory={selectedCategory}
@@ -98,7 +92,6 @@ export default function GameList() {
         </div>
       </div>
 
-      {/* Game List */}
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
@@ -117,7 +110,6 @@ export default function GameList() {
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-6">
               <button
