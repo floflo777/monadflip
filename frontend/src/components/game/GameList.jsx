@@ -60,21 +60,8 @@ export default function GameList() {
   const currentGames = filteredGames.slice(indexOfFirstGame, indexOfLastGame);
   const totalPages = Math.ceil(filteredGames.length / gamesPerPage);
 
-  const featuredGames = filteredGames.slice(0, 5);
-
   return (
     <div className="space-y-6">
-      {featuredGames.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold text-primary mb-4">Featured Games</h2>
-          <div className="space-y-3">
-            {featuredGames.map((game) => (
-              <GameCard key={game.gameId} game={game} featured />
-            ))}
-          </div>
-        </div>
-      )}
-
       <div>
         <h2 className="text-2xl font-bold text-primary mb-4">All Games</h2>
         
