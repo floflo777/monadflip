@@ -33,7 +33,7 @@ export default function ProtocolStats() {
   if (loading) {
     return (
       <div className="glass-card rounded-2xl px-6 py-4 mb-6">
-        <div className="flex items-center justify-center text-sm text-gray-400">
+        <div className="flex items-center justify-center text-sm text-primary">
           Loading stats...
         </div>
       </div>
@@ -42,23 +42,23 @@ export default function ProtocolStats() {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div className="glass-card rounded-xl p-6 hover:glass-strong transition-all">
-        <div className="text-sm text-gray-400 mb-1">24h Volume</div>
+      <div className="glass-card rounded-2xl p-6">
+        <div className="text-sm text-gray-600 mb-1">24h Volume</div>
         <div className="text-2xl font-bold text-accent">{stats.volume24h} MON</div>
       </div>
       
-      <div className="glass-card rounded-xl p-6 hover:glass-strong transition-all">
-        <div className="text-sm text-gray-400 mb-1">Games Today</div>
+      <div className="glass-card rounded-2xl p-6">
+        <div className="text-sm text-gray-600 mb-1">Games Today</div>
         <div className="text-2xl font-bold text-primary">{stats.gamesToday}</div>
       </div>
       
-      <div className="glass-card rounded-xl p-6 hover:glass-strong transition-all">
-        <div className="text-sm text-gray-400 mb-1">Total Flipped</div>
+      <div className="glass-card rounded-2xl p-6">
+        <div className="text-sm text-gray-600 mb-1">Total Flipped</div>
         <div className="text-2xl font-bold text-accent">{stats.totalFlipped} MON</div>
       </div>
       
-      <div className="glass-card rounded-xl p-6 hover:glass-strong transition-all">
-        <div className="text-sm text-gray-400 mb-1">Total Players</div>
+      <div className="glass-card rounded-2xl p-6">
+        <div className="text-sm text-gray-600 mb-1">Total Players</div>
         <div className="text-2xl font-bold text-primary">{stats.totalPlayers}</div>
       </div>
     </div>

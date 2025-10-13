@@ -41,21 +41,20 @@ export default function Ticker() {
   const tickerItems = [
     `24h Volume: ${stats.volume24h} MON`,
     `Games Today: ${stats.gamesToday}`,
-    `Total Flipped: ${stats.totalFlipped} MON`,
-    `Players: ${stats.totalPlayers}`,
+    `Total Volume: ${stats.totalFlipped} MON`,
+    `Active Players: ${stats.totalPlayers}`,
     ...recentGames.map(game => 
-      `Last Win: ${shortAddress(game.winner)} won ${parseFloat(game.payout).toFixed(3)} MON`
+      `${shortAddress(game.winner)} won ${parseFloat(game.payout).toFixed(3)} MON`
     )
   ];
 
   return (
-    <div className="glass border-y border-white/10 overflow-hidden py-3">
+    <div className="bg-primary-dark text-white py-2 overflow-hidden border-b-2 border-accent">
       <div className="flex animate-ticker whitespace-nowrap">
-        {/* Duplicate items for seamless loop */}
         {[...tickerItems, ...tickerItems].map((item, index) => (
           <div key={index} className="inline-flex items-center mx-8">
-            <span className="w-2 h-2 bg-accent rounded-full mr-3 animate-pulse"></span>
-            <span className="text-white font-semibold">{item}</span>
+            <span className="w-1.5 h-1.5 bg-accent rounded-full mr-3"></span>
+            <span className="text-sm font-medium">{item}</span>
           </div>
         ))}
       </div>
