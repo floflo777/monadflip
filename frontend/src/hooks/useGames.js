@@ -19,12 +19,19 @@ export const useGames = () => {
       console.log('Loading games with pagination...');
       
       // Utiliser la nouvelle fonction optimisée
-      const [gamesData, totalCount] = await readContract.getOpenGamesWithData(1000, 0);
+      const result = await readContract.getOpenGamesWithData(1000, 0);
+      
+      // result est un tuple [gamesArray, totalCount]
+      const gamesData = result[0]; // Les games
+      const totalCount = result[1]; // Le total
       
       console.log(`Loaded ${gamesData.length} games out of ${totalCount} total`);
 
-      const openGames = gamesData.map(game => ({
-        gameId: game.gameId ? game.gameId.toString() : '0',
+      // On doit reconstruire les games avec leurs IDs depuis getOpenGames
+      const gameIds = await readContract.getOpenGames();
+      
+      const openGames = gamesData.map((game, index) => ({
+        gameId: gameIds[index] ? gameIds[index].toString() : index.toString(),
         player1: game.player1,
         player2: game.player2,
         betAmount: ethers.formatEther(game.betAmount),
@@ -52,12 +59,19 @@ export const useGames = () => {
       console.log('Loading my games with pagination...');
       
       // Utiliser la nouvelle fonction optimisée
-      const [myGamesData, totalCount] = await contract.getMyGamesWithData(account, 1000, 0);
+      const result = await contract.getMyGamesWithData(account, 1000, 0);
+      
+      // result est un tuple [gamesArray, totalCount]
+      const myGamesData = result[0]; // Les games
+      const totalCount = result[1]; // Le total
       
       console.log(`Loaded ${myGamesData.length} of my games out of ${totalCount} total`);
 
-      const myGames = myGamesData.map(game => ({
-        gameId: game.gameId ? game.gameId.toString() : '0',
+      // On doit reconstruire les games avec leurs IDs depuis getMyGames
+      const gameIds = await contract.getMyGames(account);
+
+      const myGames = myGamesData.map((game, index) => ({
+        gameId: gameIds[index] ? gameIds[index].toString() : index.toString(),
         player1: game.player1,
         player2: game.player2,
         betAmount: ethers.formatEther(game.betAmount),
