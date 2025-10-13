@@ -86,10 +86,10 @@ export default function GameList() {
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => setShowMyGames(false)}
-            className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition ${
+            className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition text-primary ${
               !showMyGames
-                ? 'bg-primary text-white'
-                : 'text-primary hover:glass-strong'
+                ? 'border-2 border-primary'
+                : 'border border-transparent hover:glass-strong'
             }`}
           >
             All Games
@@ -98,10 +98,10 @@ export default function GameList() {
           {account && (
             <button
               onClick={() => setShowMyGames(true)}
-              className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition ${
+              className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition text-primary ${
                 showMyGames
-                  ? 'bg-primary text-white'
-                  : 'text-primary hover:glass-strong'
+                  ? 'border-2 border-primary'
+                  : 'border border-transparent hover:glass-strong'
               }`}
             >
               My Games
@@ -202,10 +202,10 @@ export default function GameList() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`glass-card px-4 py-2 rounded-lg font-semibold transition ${
+                        className={`glass-card px-4 py-2 rounded-lg font-semibold transition text-primary ${
                           currentPage === pageNum
-                            ? 'bg-primary text-white'
-                            : 'text-primary hover:glass-strong'
+                            ? 'border-2 border-primary'
+                            : 'border border-transparent hover:glass-strong'
                         }`}
                       >
                         {pageNum}
@@ -257,10 +257,10 @@ export default function GameList() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`glass-card px-4 py-2 rounded-lg font-semibold transition ${
+                        className={`glass-card px-4 py-2 rounded-lg font-semibold transition text-primary ${
                           currentPage === pageNum
-                            ? 'bg-primary text-white'
-                            : 'text-primary hover:glass-strong'
+                            ? 'border-2 border-primary'
+                            : 'border border-transparent hover:glass-strong'
                         }`}
                       >
                         {pageNum}
