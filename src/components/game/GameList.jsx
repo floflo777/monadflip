@@ -71,7 +71,7 @@ export default function GameList() {
       {/* Featured Games */}
       {featuredGames.length > 0 && (
         <div>
-          <h2 className="text-2xl font-bold text-primary mb-4">🎯 Featured Games</h2>
+          <h2 className="text-2xl font-bold text-primary mb-4"> Featured Games</h2>
           <div className="space-y-3">
             {featuredGames.map((game) => (
               <GameCard key={game.gameId} game={game} featured />

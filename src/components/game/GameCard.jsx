@@ -95,13 +95,13 @@ export default function GameCard({ game, featured = false }) {
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
-          {featured && <span className="text-accent text-sm">⭐</span>}
+          {featured && <span className="text-accent text-sm"></span>}
         </div>
         <p className="text-sm text-gray-300 mt-1">
           {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
         </p>
         <p className={`text-xs mt-2 ${isExpiringSoon ? 'text-orange-300' : 'text-gray-400'}`}>
-          {isExpiringSoon && '⚠️ '}Expires in {timeLeft}
+          {isExpiringSoon && 'Expires in ' + timeLeft}
         </p>
       </div>
 
