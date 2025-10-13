@@ -5,14 +5,9 @@ import { ethers } from 'ethers';
 
 export const useGames = () => {
   const { contract, account, provider } = useWeb3();
-  const { setGames, setMyGames, setLoading, isTransactionPending } = useGameStore();
+  const { setGames, setMyGames, setLoading } = useGameStore();
 
   const loadGames = useCallback(async () => {
-    if (isTransactionPending) {
-      console.log('Transaction pending, skipping reload');
-      return;
-    }
-
     const readContract = contract || provider?.contract;
     if (!readContract) return;
 
@@ -43,10 +38,10 @@ export const useGames = () => {
       console.error('Error loading games:', error);
     }
     setLoading(false);
-  }, [contract, provider, setGames, setLoading, isTransactionPending]);
+  }, [contract, provider, setGames, setLoading]);
 
   const loadMyGames = useCallback(async () => {
-    if (!contract || !account || isTransactionPending) return;
+    if (!contract || !account) return;
 
     try {
       const myGameIds = await contract.getMyGames(account);
@@ -73,7 +68,7 @@ export const useGames = () => {
     } catch (error) {
       console.error('Error loading my games:', error);
     }
-  }, [contract, account, setMyGames, isTransactionPending]);
+  }, [contract, account, setMyGames]);
 
   useEffect(() => {
     if (contract || provider?.contract) {
