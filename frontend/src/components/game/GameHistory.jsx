@@ -19,8 +19,8 @@ export default function GameHistory() {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6">
-      <h3 className="text-xl font-bold text-primary mb-4"> Recent Games</h3>
+    <div className="glass-card rounded-2xl p-6">
+      <h3 className="text-xl font-bold text-primary mb-4">Recent Games</h3>
       
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {history.map((game) => {
@@ -34,21 +34,21 @@ export default function GameHistory() {
           return (
             <div
               key={game.txHash}
-              className={`p-3 rounded-lg text-sm ${
-                game.isWinner ? 'bg-accent/10 border border-accent/30' : 'bg-gray-50'
+              className={`glass p-3 rounded-lg text-sm ${
+                game.isWinner ? 'border-l-4 border-accent' : 'border-l-4 border-gray-300'
               }`}
             >
               <div className="flex justify-between items-center">
                 <div>
                   <span className={`font-semibold ${game.isWinner ? 'text-accent' : 'text-gray-600'}`}>
-                    {game.isWinner ? 'Won' : 'Lost'}
+                    {game.isWinner ? '✓ Won' : '✗ Lost'}
                   </span>
                   <span className="ml-2 text-primary font-semibold">
                     {amount} MON
                   </span>
                 </div>
-                {MONAD_EXPLORER && (<a
-                  
+                {MONAD_EXPLORER && (
+                  <a
                     href={`${MONAD_EXPLORER}/tx/${game.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"

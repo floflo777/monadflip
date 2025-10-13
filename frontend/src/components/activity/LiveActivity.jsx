@@ -39,7 +39,7 @@ export default function LiveActivity() {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6">
+    <div className="glass-card rounded-2xl p-6">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
         <h3 className="text-xl font-bold text-primary">Live Activity</h3>
@@ -54,7 +54,7 @@ export default function LiveActivity() {
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="bg-gray-50 rounded-lg p-3 border-l-4 border-accent animate-fadeIn"
+              className="glass-card rounded-lg p-3 border-l-4 border-accent animate-fadeIn"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -72,7 +72,7 @@ export default function LiveActivity() {
                   </div>
                 </div>
                 {parseFloat(activity.amount) >= 10 && (
-                  <span className="text-lg">HIGH</span>
+                  <span className="text-lg">🐋</span>
                 )}
               </div>
             </div>

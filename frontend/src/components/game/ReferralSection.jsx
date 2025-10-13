@@ -49,10 +49,10 @@ export default function ReferralSection() {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6">
+    <div className="glass-card rounded-2xl p-6">
       <h3 className="text-xl font-bold text-primary mb-4">Share & Earn</h3>
 
-      <div className="bg-accent/10 rounded-lg p-4 mb-4 border border-accent/20">
+      <div className="glass rounded-lg p-4 mb-4 border border-accent/20">
         <p className="text-sm text-primary font-semibold mb-2">Your Earnings</p>
         <p className="text-3xl font-bold text-primary mb-1">
           {parseFloat(stats.totalEarned).toFixed(4)} MON
@@ -64,14 +64,14 @@ export default function ReferralSection() {
 
       <div className="mb-4">
         <p className="text-xs text-gray-600 mb-2">Your referral link:</p>
-        <div className="bg-gray-100 rounded-lg p-3 text-xs break-all text-primary font-mono">
+        <div className="glass rounded-lg p-3 text-xs break-all text-primary font-mono">
           {window.location.origin}?ref={account.slice(0, 10)}...
         </div>
       </div>
 
       <button
         onClick={copyReferralLink}
-        className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center gap-2"
+        className="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
       >
         {copied ? 'Link Copied!' : 'Copy Referral Link'}
       </button>

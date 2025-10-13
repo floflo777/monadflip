@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../../context/Web3Context';
 import { useGameStore } from '../../hooks/useGameStore';
-import { useGames } from '../../hooks/useGames';
 import { ethers } from 'ethers';
 import { MIN_BET, DURATION_OPTIONS } from '../../utils/constants';
 import { getReferral } from '../../utils/referral';
@@ -10,7 +9,6 @@ import toast from 'react-hot-toast';
 export default function CreateGameModal() {
   const { contract, account } = useWeb3();
   const { setShowCreateModal } = useGameStore();
-  const { loadGames, loadMyGames } = useGames();
   const [betAmount, setBetAmount] = useState('');
   const [choice, setChoice] = useState(true);
   const [duration, setDuration] = useState(86400);
@@ -48,8 +46,6 @@ export default function CreateGameModal() {
         duration: 5000
       });
       setShowCreateModal(false);
-      
-      // NE PAS recharger automatiquement
     } catch (error) {
       console.error('Create game error:', error);
       toast.error(`${error.reason || 'Failed to create game'}`, { id: toastId });
@@ -62,7 +58,7 @@ export default function CreateGameModal() {
       onClick={() => setShowCreateModal(false)}
     >
       <div
-        className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+        className="glass-card rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold text-primary mb-6">Create a Game</h2>
@@ -78,7 +74,7 @@ export default function CreateGameModal() {
               placeholder={`Min ${MIN_BET} MON`}
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white/50"
             />
           </div>
 
@@ -92,7 +88,7 @@ export default function CreateGameModal() {
                 className={`flex-1 py-3 rounded-lg font-semibold transition ${
                   choice
                     ? 'bg-primary text-white'
-                    : 'bg-gray-200 text-primary hover:bg-gray-300'
+                    : 'glass text-primary hover:glass-card'
                 }`}
               >
                 Heads
@@ -102,7 +98,7 @@ export default function CreateGameModal() {
                 className={`flex-1 py-3 rounded-lg font-semibold transition ${
                   !choice
                     ? 'bg-primary text-white'
-                    : 'bg-gray-200 text-primary hover:bg-gray-300'
+                    : 'glass text-primary hover:glass-card'
                 }`}
               >
                 Tails
@@ -117,7 +113,7 @@ export default function CreateGameModal() {
             <select
               value={duration}
               onChange={(e) => setDuration(parseInt(e.target.value))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white/50"
             >
               {DURATION_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -131,13 +127,13 @@ export default function CreateGameModal() {
         <div className="flex gap-4 mt-6">
           <button
             onClick={handleCreate}
-            className="flex-1 bg-accent text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition"
+            className="flex-1 bg-gradient-to-r from-accent to-primary text-white py-3 rounded-lg font-bold hover:shadow-lg transition-all"
           >
             Create
           </button>
           <button
             onClick={() => setShowCreateModal(false)}
-            className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-400 transition"
+            className="flex-1 glass text-gray-700 py-3 rounded-lg font-bold hover:glass-card transition-all"
           >
             Cancel
           </button>

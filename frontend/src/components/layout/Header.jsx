@@ -11,17 +11,17 @@ export default function Header() {
   const isCorrectNetwork = chainId === MONAD_CHAIN_ID;
 
   return (
-    <header className="bg-primary h-[15vh] flex items-center justify-between px-8 relative z-10">
+    <header className="glass border-b border-white/20 h-[15vh] flex items-center justify-between px-8 relative z-10">
       <button
         onClick={() => setShowCreateModal(true)}
-        className="bg-primary-dark text-white px-6 py-3 rounded-full text-xl font-bold hover:bg-opacity-90 transition"
+        className="bg-primary-dark text-white px-6 py-3 rounded-full text-xl font-bold hover:shadow-lg transition-all transform hover:scale-105"
       >
         Create Game
       </button>
 
       <div className="flex items-center gap-3 flex-1 justify-center">
         <img src="/heads.png" alt="Whale" className="w-12 h-12" />
-        <h1 className="text-white text-4xl font-bold">
+        <h1 className="text-primary-dark text-4xl font-bold">
           MonadFlip
         </h1>
       </div>
@@ -32,7 +32,7 @@ export default function Header() {
             href={MONAD_FAUCET}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-accent text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-opacity-90 transition"
+            className="bg-accent text-white px-4 py-2 rounded-full text-sm font-bold hover:shadow-lg transition-all"
           >
             Get MON
           </a>
@@ -49,7 +49,7 @@ export default function Header() {
 
         <button
           onClick={connectWallet}
-          className="bg-primary-dark text-white px-6 py-3 rounded-full text-xl font-bold hover:bg-opacity-90 transition whitespace-nowrap"
+          className="bg-primary-dark text-white px-6 py-3 rounded-full text-xl font-bold hover:shadow-lg transition-all whitespace-nowrap"
         >
           {account ? shortAddress(account) : 'Connect'}
         </button>
