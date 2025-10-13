@@ -17,16 +17,21 @@ import { checkUrlReferral } from './utils/referral';
 
 function AppContent() {
   const { showCreateModal, showAnimation, flipResult, resultMessage } = useGameStore();
-  const { contract, account } = useWeb3();
+  const { contract, account, provider } = useWeb3();
   const { loadGames, loadMyGames } = useGames();
   
   useGameHistory(contract, account);
 
   useEffect(() => {
     checkUrlReferral();
-    loadGames();
-    loadMyGames();
   }, []);
+
+  useEffect(() => {
+    if (contract || provider?.contract) {
+      loadGames();
+      loadMyGames();
+    }
+  }, [contract, provider, loadGames, loadMyGames]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
