@@ -20,7 +20,7 @@ export default function Header() {
       </button>
 
       <div className="flex items-center gap-3 flex-1 justify-center">
-        <img src="/heads.png" alt="Whale" className="w-12 h-12" />
+        <img src="/favicon-32x32.png" alt="MonadFlip" className="w-10 h-10" />
         <h1 className="text-primary-dark text-4xl font-bold">
           MonadFlip
         </h1>
@@ -28,7 +28,7 @@ export default function Header() {
 
       <div className="flex items-center gap-4">
         {MONAD_FAUCET && (
-          <a
+          
             href={MONAD_FAUCET}
             target="_blank"
             rel="noopener noreferrer"

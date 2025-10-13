@@ -4,8 +4,6 @@ import { useGameStore } from '../../hooks/useGameStore';
 import { useGames } from '../../hooks/useGames';
 import GameCard from './GameCard';
 import GameFilters from './GameFilters';
-import StakeFilter from './StakeFilter';
-import { STAKE_CATEGORIES } from '../../utils/constants';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -15,7 +13,6 @@ export default function GameList() {
   const { loadGames, loadMyGames } = useGames();
   const [showMyGames, setShowMyGames] = useState(false);
   const [filteredGames, setFilteredGames] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(STAKE_CATEGORIES[0]);
   const [filters, setFilters] = useState({
     minBet: '',
     maxBet: '',
@@ -32,7 +29,6 @@ export default function GameList() {
     }
   };
 
-  // Charger automatiquement quand on change d'onglet
   useEffect(() => {
     if (showMyGames && account) {
       loadMyGames();
@@ -46,13 +42,6 @@ export default function GameList() {
 
     if (!showMyGames && account) {
       result = result.filter(g => g.player1.toLowerCase() !== account.toLowerCase());
-    }
-
-    if (selectedCategory.label !== 'All') {
-      result = result.filter(g => {
-        const amount = parseFloat(g.betAmount);
-        return amount >= selectedCategory.min && amount < selectedCategory.max;
-      });
     }
 
     if (filters.minBet) {
@@ -75,7 +64,7 @@ export default function GameList() {
 
     setFilteredGames(result);
     setCurrentPage(1);
-  }, [games, myGames, filters, selectedCategory, showMyGames, account]);
+  }, [games, myGames, filters, showMyGames, account]);
 
   const indexOfLastGame = currentPage * gamesPerPage;
   const indexOfFirstGame = indexOfLastGame - gamesPerPage;
@@ -84,7 +73,6 @@ export default function GameList() {
 
   const now = Math.floor(Date.now() / 1000);
   
-  // Pour My Games, on groupe par statut
   const expiredGames = showMyGames ? filteredGames.filter(game => {
     const isCreator = game.player1.toLowerCase() === account?.toLowerCase();
     return isCreator && 
@@ -107,10 +95,10 @@ export default function GameList() {
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => setShowMyGames(false)}
-            className={`px-6 py-3 rounded-lg font-bold text-lg transition ${
+            className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition ${
               !showMyGames
-                ? 'bg-primary text-white'
-                : 'bg-gray-200 text-primary hover:bg-gray-300'
+                ? 'bg-primary/20 text-primary'
+                : 'text-primary hover:glass-strong'
             }`}
           >
             All Games
@@ -119,10 +107,10 @@ export default function GameList() {
           {account && (
             <button
               onClick={() => setShowMyGames(true)}
-              className={`px-6 py-3 rounded-lg font-bold text-lg transition ${
+              className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition ${
                 showMyGames
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-200 text-primary hover:bg-gray-300'
+                  ? 'bg-primary/20 text-primary'
+                  : 'text-primary hover:glass-strong'
               }`}
             >
               My Games
@@ -132,40 +120,29 @@ export default function GameList() {
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="ml-auto px-4 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="ml-auto glass-card p-3 rounded-lg hover:glass-strong transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Refresh"
           >
             <svg 
-              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} 
+              className={`w-5 h-5 text-primary ${loading ? 'animate-spin' : ''}`} 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Refresh
           </button>
         </div>
 
         {showMyGames && expiredGames.length > 0 && (
-          <div className="mb-6 p-4 bg-orange-50 border-2 border-orange-300 rounded-lg">
+          <div className="mb-6 p-4 glass-card rounded-lg border-2 border-orange-300">
             <p className="text-orange-700 font-bold">
               You have {expiredGames.length} expired {expiredGames.length === 1 ? 'game' : 'games'} to withdraw!
             </p>
           </div>
         )}
-        
-        <StakeFilter 
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-        />
 
         <GameFilters filters={filters} setFilters={setFilters} />
-
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-primary-dark font-semibold">
-            {filteredGames.length} {filteredGames.length === 1 ? 'game' : 'games'}
-          </span>
-        </div>
       </div>
 
       {loading ? (
@@ -173,8 +150,8 @@ export default function GameList() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-primary">Loading games...</p>
         </div>
-      ) : filteredGames.length === 0 ? (
-        <div className="bg-white rounded-3xl p-8 text-center">
+      ) : currentGames.length === 0 ? (
+        <div className="glass-card rounded-3xl p-8 text-center">
           <p className="text-gray-500 text-lg">
             {showMyGames ? 'You have no games yet' : 'No games in this category'}
           </p>
@@ -185,7 +162,6 @@ export default function GameList() {
       ) : (
         <>
           {showMyGames ? (
-            // My Games avec sections mais pagination globale
             <div className="space-y-6">
               {currentGames.map((game) => {
                 const isExpired = now >= game.expirationTime;
@@ -214,7 +190,7 @@ export default function GameList() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="glass-card px-4 py-2 rounded-lg text-primary font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:glass-strong transition"
                   >
                     Previous
                   </button>
@@ -235,10 +211,10 @@ export default function GameList() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-4 py-2 rounded-lg font-semibold ${
+                        className={`glass-card px-4 py-2 rounded-lg font-semibold transition ${
                           currentPage === pageNum
-                            ? 'bg-primary text-white'
-                            : 'bg-gray-200 text-primary hover:bg-gray-300'
+                            ? 'bg-primary/20 text-primary'
+                            : 'text-primary hover:glass-strong'
                         }`}
                       >
                         {pageNum}
@@ -249,7 +225,7 @@ export default function GameList() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="glass-card px-4 py-2 rounded-lg text-primary font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:glass-strong transition"
                   >
                     Next
                   </button>
@@ -257,7 +233,6 @@ export default function GameList() {
               )}
             </div>
           ) : (
-            // All Games avec pagination normale
             <>
               <div className="space-y-3">
                 {currentGames.map((game) => (
@@ -270,7 +245,7 @@ export default function GameList() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="glass-card px-4 py-2 rounded-lg text-primary font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:glass-strong transition"
                   >
                     Previous
                   </button>
@@ -291,10 +266,10 @@ export default function GameList() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-4 py-2 rounded-lg font-semibold ${
+                        className={`glass-card px-4 py-2 rounded-lg font-semibold transition ${
                           currentPage === pageNum
-                            ? 'bg-primary text-white'
-                            : 'bg-gray-200 text-primary hover:bg-gray-300'
+                            ? 'bg-primary/20 text-primary'
+                            : 'text-primary hover:glass-strong'
                         }`}
                       >
                         {pageNum}
@@ -305,7 +280,7 @@ export default function GameList() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="glass-card px-4 py-2 rounded-lg text-primary font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:glass-strong transition"
                   >
                     Next
                   </button>
