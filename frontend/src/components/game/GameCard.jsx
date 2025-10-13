@@ -100,10 +100,14 @@ export default function GameCard({ game, featured = false }) {
       
       if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
         toast.error('Transaction rejected', { id: toastId });
+      } else if (error.code === 'UNKNOWN_ERROR' || error.code === -32005) {
+        toast.error('Transaction reverted - Please try again', { id: toastId });
       } else if (error.message && error.message.includes('Game already joined')) {
         toast.error('This game has already been joined', { id: toastId });
+      } else if (error.message && error.message.includes('rate limit')) {
+        toast.error('Network busy - Please try again in a moment', { id: toastId });
       } else {
-        toast.error(`${error.reason || error.message || 'Transaction failed'}`, { id: toastId });
+        toast.error('Transaction failed - Please try again', { id: toastId });
       }
     }
   };
