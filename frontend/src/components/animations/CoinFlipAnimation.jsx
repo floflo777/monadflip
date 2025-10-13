@@ -10,7 +10,7 @@ export default function CoinFlipAnimation({ flipResult }) {
 
     const targetRotation = flipResult.startsWith('heads') ? 720 : 900;
     
-    const duration = 3500;
+    const duration = 2500;
     const startTime = Date.now();
 
     const animate = () => {
@@ -32,6 +32,8 @@ export default function CoinFlipAnimation({ flipResult }) {
     requestAnimationFrame(animate);
   }, [flipResult]);
 
+  const imageRotation = isFlipping ? 180 : 0;
+
   return (
     <div className="w-80 h-80 flex items-center justify-center relative">
       <div 
@@ -52,8 +54,8 @@ export default function CoinFlipAnimation({ flipResult }) {
           }}
         >
           <div 
-            className="text-9xl font-bold text-white"
-            style={{ transform: 'rotate(180deg)' }}
+            className="text-9xl font-bold text-white transition-transform duration-600"
+            style={{ transform: `rotate(${imageRotation}deg)` }}
           >
             🐋
           </div>
@@ -69,10 +71,10 @@ export default function CoinFlipAnimation({ flipResult }) {
           }}
         >
           <div 
-            className="text-9xl font-bold text-white" 
+            className="text-9xl font-bold text-white transition-transform duration-600" 
             style={{ 
               textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-              transform: 'rotate(180deg)'
+              transform: `rotate(${imageRotation}deg)`
             }}
           >
             $

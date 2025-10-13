@@ -3,6 +3,8 @@ import { useWeb3 } from '../context/Web3Context';
 import { useGameStore } from './useGameStore';
 import { ethers } from 'ethers';
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 export const useGames = () => {
   const { contract, account, provider } = useWeb3();
   const { setGames, setMyGames, setLoading } = useGameStore();
@@ -33,7 +35,11 @@ export const useGames = () => {
         })
       );
 
-      setGames(gamesData);
+      const openGames = gamesData.filter(g => 
+        g.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase() && !g.resolved
+      );
+
+      setGames(openGames);
     } catch (error) {
       console.error('Error loading games:', error);
     }
