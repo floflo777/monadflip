@@ -2,20 +2,24 @@ import db from './db.js';
 import { ethers } from 'ethers';
 
 export function updateStats(gameData) {
-  const { winner, payout, txHash, timestamp } = gameData;
+  const { winner, payout, timestamp } = gameData;
 
   const transaction = db.transaction(() => {
+    const stats = db.prepare('SELECT total_volume FROM protocol_stats WHERE id = 1').get();
+    const currentVolume = parseFloat(stats.total_volume);
+    const payoutValue = parseFloat(ethers.formatEther(payout));
+    const newVolume = currentVolume + payoutValue;
+
     const stmt = db.prepare(`
       UPDATE protocol_stats 
       SET 
-        total_volume = (CAST(total_volume AS REAL) + ?)::TEXT,
+        total_volume = ?,
         total_games = total_games + 1,
         last_updated = ?
       WHERE id = 1
     `);
     
-    const payoutValue = parseFloat(ethers.formatEther(payout));
-    stmt.run(payoutValue, timestamp);
+    stmt.run(newVolume.toString(), timestamp);
 
     const insertPlayer = db.prepare(`
       INSERT OR IGNORE INTO players (address, first_seen) 
