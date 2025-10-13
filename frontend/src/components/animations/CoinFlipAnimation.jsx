@@ -24,59 +24,26 @@ function Coin({ flipResult }) {
   });
 
   return (
-    <group>
-      <mesh ref={coinRef} rotation={[-Math.PI / 2, 0, 0]} scale={[1.5, 1.5, 1.5]} castShadow receiveShadow>
-        <cylinderGeometry args={[1, 1, 0.15, 64]} />
-        <meshPhysicalMaterial
-          color="#FFD700"
-          metalness={1.0}
-          roughness={0.15}
-          clearcoat={1.0}
-          clearcoatRoughness={0.1}
-          reflectivity={1.0}
-          envMapIntensity={2}
-        />
-      </mesh>
-    </group>
+    <mesh ref={coinRef} rotation={[-Math.PI / 2, 0, 0]} scale={[1.5, 1.5, 1.5]}>
+      <cylinderGeometry args={[1, 1, 0.1, 32]} />
+      <meshStandardMaterial 
+        color="#FFD700"
+        metalness={0.9}
+        roughness={0.1}
+        envMapIntensity={1.5}
+      />
+    </mesh>
   );
 }
 
 export default function CoinFlipAnimation({ flipResult }) {
   return (
     <div className="w-80 h-80">
-      <Canvas 
-        camera={{ position: [0, 0, 5], fov: 50 }}
-        shadows
-      >
-        <color attach="background" args={['#000000']} />
-        
-        <ambientLight intensity={0.3} />
-        
-        <spotLight
-          position={[5, 5, 5]}
-          angle={0.3}
-          penumbra={0.5}
-          intensity={2}
-          castShadow
-          color="#ffffff"
-        />
-        
-        <spotLight
-          position={[-5, 5, 5]}
-          angle={0.3}
-          penumbra={0.5}
-          intensity={1.5}
-          color="#ffffaa"
-        />
-        
-        <pointLight position={[0, -3, 3]} intensity={1} color="#ffaa00" />
-        
-        <directionalLight
-          position={[0, 10, 0]}
-          intensity={1.5}
-          color="#ffffff"
-        />
-        
+      <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+        <ambientLight intensity={0.8} />
+        <directionalLight position={[5, 5, 5]} intensity={1.5} castShadow />
+        <directionalLight position={[-5, -5, -5]} intensity={0.5} />
+        <pointLight position={[0, 5, 0]} intensity={1} color="#ffffff" />
         <Coin flipResult={flipResult} />
       </Canvas>
     </div>
