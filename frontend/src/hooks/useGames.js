@@ -4,19 +4,20 @@ import { useGameStore } from './useGameStore';
 import { ethers } from 'ethers';
 
 export const useGames = () => {
-  const { contract, account } = useWeb3();
+  const { contract, account, provider } = useWeb3();
   const { setGames, setMyGames, setLoading } = useGameStore();
 
   const loadGames = useCallback(async () => {
-    if (!contract) return;
+    const readContract = contract || provider?.contract;
+    if (!readContract) return;
 
     setLoading(true);
     try {
-      const openGameIds = await contract.getOpenGames();
+      const openGameIds = await readContract.getOpenGames();
       
       const gamesData = await Promise.all(
         openGameIds.map(async (id) => {
-          const game = await contract.getGame(id);
+          const game = await readContract.getGame(id);
           return {
             gameId: id.toString(),
             player1: game.player1,
@@ -37,7 +38,7 @@ export const useGames = () => {
       console.error('Error loading games:', error);
     }
     setLoading(false);
-  }, [contract, setGames, setLoading]);
+  }, [contract, provider, setGames, setLoading]);
 
   const loadMyGames = useCallback(async () => {
     if (!contract || !account) return;
@@ -70,35 +71,37 @@ export const useGames = () => {
   }, [contract, account, setMyGames]);
 
   useEffect(() => {
-    if (contract) {
+    if (contract || provider?.contract) {
       loadGames();
       loadMyGames();
 
-      const filterCreated = contract.filters.GameCreated();
-      const filterJoined = contract.filters.GameJoined();
-      const filterResolved = contract.filters.GameResolved();
+      if (contract) {
+        const filterCreated = contract.filters.GameCreated();
+        const filterJoined = contract.filters.GameJoined();
+        const filterResolved = contract.filters.GameResolved();
 
-      contract.on(filterCreated, () => {
-        setTimeout(loadGames, 2000);
-      });
+        contract.on(filterCreated, () => {
+          setTimeout(loadGames, 2000);
+        });
 
-      contract.on(filterJoined, () => {
-        setTimeout(loadGames, 2000);
-        setTimeout(loadMyGames, 2000);
-      });
+        contract.on(filterJoined, () => {
+          setTimeout(loadGames, 2000);
+          setTimeout(loadMyGames, 2000);
+        });
 
-      contract.on(filterResolved, () => {
-        setTimeout(loadGames, 2000);
-        setTimeout(loadMyGames, 2000);
-      });
+        contract.on(filterResolved, () => {
+          setTimeout(loadGames, 2000);
+          setTimeout(loadMyGames, 2000);
+        });
 
-      return () => {
-        contract.removeAllListeners(filterCreated);
-        contract.removeAllListeners(filterJoined);
-        contract.removeAllListeners(filterResolved);
-      };
+        return () => {
+          contract.removeAllListeners(filterCreated);
+          contract.removeAllListeners(filterJoined);
+          contract.removeAllListeners(filterResolved);
+        };
+      }
     }
-  }, [contract, loadGames, loadMyGames]);
+  }, [contract, provider, loadGames, loadMyGames]);
 
   return { loadGames, loadMyGames };
 };

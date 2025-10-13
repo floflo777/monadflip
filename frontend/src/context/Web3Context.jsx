@@ -8,12 +8,28 @@ const Web3Context = createContext();
 
 export const useWeb3 = () => useContext(Web3Context);
 
+const RPC_URL = 'https://rpc.ankr.com/monad_testnet/67cca7c2e9bc74d8b3b42d36d791d367eb3094bb60102d7a2b434ba3fa68f11e';
+
 export const Web3Provider = ({ children }) => {
   const [account, setAccount] = useState(null);
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [contract, setContract] = useState(null);
   const [chainId, setChainId] = useState(null);
+
+  useEffect(() => {
+    const publicProvider = new ethers.JsonRpcProvider(RPC_URL);
+    const readOnlyContract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      CoinFlipABI,
+      publicProvider
+    );
+
+    setProvider({
+      ...publicProvider,
+      contract: readOnlyContract
+    });
+  }, []);
 
   const connectWallet = async () => {
     if (!window.ethereum) {
@@ -26,12 +42,11 @@ export const Web3Provider = ({ children }) => {
         method: 'eth_requestAccounts'
       });
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const network = await provider.getNetwork();
+      const walletProvider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await walletProvider.getSigner();
+      const network = await walletProvider.getNetwork();
       
       setAccount(accounts[0]);
-      setProvider(provider);
       setSigner(signer);
       setChainId(Number(network.chainId));
 
