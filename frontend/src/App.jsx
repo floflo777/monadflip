@@ -29,9 +29,11 @@ function AppContent() {
   useEffect(() => {
     if (contract || provider?.contract) {
       loadGames();
-      loadMyGames();
+      if (account) {
+        loadMyGames();
+      }
     }
-  }, [contract, provider, loadGames, loadMyGames]);
+  }, [contract, provider?.contract, account]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

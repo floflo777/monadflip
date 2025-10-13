@@ -12,7 +12,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export default function GameList() {
   const { account } = useWeb3();
   const { games, myGames, loading } = useGameStore();
-  const { loadGames } = useGames();
+  const { loadGames, loadMyGames } = useGames();
   const [showMyGames, setShowMyGames] = useState(false);
   const [filteredGames, setFilteredGames] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(STAKE_CATEGORIES[0]);
@@ -24,9 +24,13 @@ export default function GameList() {
   const [currentPage, setCurrentPage] = useState(1);
   const gamesPerPage = 10;
 
-  useEffect(() => {
-    loadGames();
-  }, []);
+  const handleRefresh = () => {
+    if (showMyGames) {
+      loadMyGames();
+    } else {
+      loadGames();
+    }
+  };
 
   useEffect(() => {
     let result = showMyGames ? [...myGames] : [...games];
@@ -114,6 +118,22 @@ export default function GameList() {
               My Games
             </button>
           )}
+
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="ml-auto px-4 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <svg 
+              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
         </div>
 
         {showMyGames && expiredGames.length > 0 && (
@@ -161,7 +181,7 @@ export default function GameList() {
                   <h3 className="text-xl font-bold text-orange-600 mb-3">Expired - Withdraw Now</h3>
                   <div className="space-y-3">
                     {expiredGames.map((game) => (
-                      <GameCard key={game.gameId} game={game} />
+                      <GameCard key={game.gameId} game={game} isMyGame={true} />
                     ))}
                   </div>
                 </div>
@@ -172,7 +192,7 @@ export default function GameList() {
                   <h3 className="text-xl font-bold text-primary mb-3">Active Games</h3>
                   <div className="space-y-3">
                     {activeMyGames.map((game) => (
-                      <GameCard key={game.gameId} game={game} />
+                      <GameCard key={game.gameId} game={game} isMyGame={true} />
                     ))}
                   </div>
                 </div>
@@ -183,7 +203,7 @@ export default function GameList() {
                   <h3 className="text-xl font-bold text-accent mb-3">In Progress</h3>
                   <div className="space-y-3">
                     {playingGames.map((game) => (
-                      <GameCard key={game.gameId} game={game} />
+                      <GameCard key={game.gameId} game={game} isMyGame={true} />
                     ))}
                   </div>
                 </div>
@@ -193,7 +213,7 @@ export default function GameList() {
             <>
               <div className="space-y-3">
                 {currentGames.map((game) => (
-                  <GameCard key={game.gameId} game={game} />
+                  <GameCard key={game.gameId} game={game} isMyGame={false} />
                 ))}
               </div>
 

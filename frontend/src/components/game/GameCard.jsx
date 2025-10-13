@@ -6,7 +6,9 @@ import { shortAddress, formatTimeLeft, formatAmount } from '../../utils/formatti
 import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
 
-export default function GameCard({ game, featured = false }) {
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
+export default function GameCard({ game, isMyGame = false }) {
   const { contract, account } = useWeb3();
   const { setShowAnimation, setFlipResult, setResultMessage } = useGameStore();
   const { loadGames, loadMyGames } = useGames();
@@ -116,15 +118,122 @@ export default function GameCard({ game, featured = false }) {
     }
   };
 
+  const handleCancel = async () => {
+    if (!contract) return;
+
+    const toastId = toast.loading('Cancelling game...');
+
+    try {
+      const tx = await contract.cancelGame(game.gameId);
+      toast.loading('Transaction pending...', { id: toastId });
+      await tx.wait();
+      toast.success('Game cancelled!', { id: toastId });
+      loadMyGames();
+      loadGames();
+    } catch (error) {
+      console.error('Cancel error:', error);
+      toast.error(`${error.reason || 'Failed to cancel'}`, { id: toastId });
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!contract) return;
+
+    const toastId = toast.loading('Withdrawing funds...');
+
+    try {
+      const tx = await contract.withdrawExpired(game.gameId);
+      toast.loading('Transaction pending...', { id: toastId });
+      await tx.wait();
+      toast.success('Funds withdrawn!', { id: toastId });
+      loadMyGames();
+      loadGames();
+    } catch (error) {
+      console.error('Withdraw error:', error);
+      toast.error(`${error.reason || 'Failed to withdraw'}`, { id: toastId });
+    }
+  };
+
   const timeLeft = formatTimeLeft(game.expirationTime);
   const isExpiringSoon = game.expirationTime - Math.floor(Date.now() / 1000) < 3600;
+  const isExpired = game.expirationTime - Math.floor(Date.now() / 1000) <= 0;
+  const isCreator = account && game.player1.toLowerCase() === account.toLowerCase();
+  const isWaiting = game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
+
+  if (isMyGame) {
+    if (isExpired && isWaiting) {
+      return (
+        <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-orange-500">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
+            </div>
+            <p className="text-sm text-white/90 mt-1">
+              {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
+            </p>
+            <p className="text-xs mt-2 text-white/80 font-bold">
+              EXPIRED - WITHDRAW NOW
+            </p>
+          </div>
+
+          <button
+            onClick={handleWithdraw}
+            className="bg-white text-orange-600 px-8 py-4 rounded-full text-xl font-bold hover:bg-opacity-90 transition whitespace-nowrap shadow-lg"
+          >
+            Withdraw
+          </button>
+        </div>
+      );
+    }
+
+    if (isWaiting) {
+      return (
+        <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-primary">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
+            </div>
+            <p className="text-sm text-gray-300 mt-1">
+              {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
+            </p>
+            <p className={`text-xs mt-2 ${isExpiringSoon ? 'text-orange-300' : 'text-gray-400'}`}>
+              {isExpiringSoon && 'Expires in ' + timeLeft}
+            </p>
+          </div>
+
+          <button
+            onClick={handleCancel}
+            className="bg-primary-dark px-8 py-4 rounded-full text-xl font-bold hover:bg-opacity-90 transition whitespace-nowrap shadow-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-accent">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
+          </div>
+          <p className="text-sm text-white/90 mt-1">
+            {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
+          </p>
+          <p className="text-xs mt-2 text-white/80">
+            Playing vs {shortAddress(game.player2)}
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p className="text-sm font-bold">IN PROGRESS</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`rounded-3xl p-6 flex items-center justify-between text-white ${
-      featured 
-        ? 'bg-gradient-to-r from-primary to-primary-dark shadow-lg border-2 border-accent/30' 
-        : 'bg-primary'
-    }`}>
+    <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-primary">
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
