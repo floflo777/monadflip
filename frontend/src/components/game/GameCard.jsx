@@ -98,8 +98,7 @@ export default function GameCard({ game, isMyGame = false }) {
         setShowAnimation(false);
         setFlipResult(null);
         setResultMessage('');
-        loadGames();
-        loadMyGames();
+        // NE PAS recharger automatiquement
       }, 7000);
     } catch (error) {
       console.error('Join game error:', error);
@@ -127,9 +126,11 @@ export default function GameCard({ game, isMyGame = false }) {
       const tx = await contract.cancelGame(game.gameId);
       toast.loading('Transaction pending...', { id: toastId });
       await tx.wait();
-      toast.success('Game cancelled!', { id: toastId });
-      loadMyGames();
-      loadGames();
+      toast.success('Game cancelled! Click Refresh to update the list.', { 
+        id: toastId,
+        duration: 5000
+      });
+      // NE PAS recharger automatiquement
     } catch (error) {
       console.error('Cancel error:', error);
       toast.error(`${error.reason || 'Failed to cancel'}`, { id: toastId });
@@ -145,9 +146,11 @@ export default function GameCard({ game, isMyGame = false }) {
       const tx = await contract.withdrawExpired(game.gameId);
       toast.loading('Transaction pending...', { id: toastId });
       await tx.wait();
-      toast.success('Funds withdrawn!', { id: toastId });
-      loadMyGames();
-      loadGames();
+      toast.success('Funds withdrawn! Click Refresh to update the list.', { 
+        id: toastId,
+        duration: 5000
+      });
+      // NE PAS recharger automatiquement
     } catch (error) {
       console.error('Withdraw error:', error);
       toast.error(`${error.reason || 'Failed to withdraw'}`, { id: toastId });

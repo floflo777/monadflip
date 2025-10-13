@@ -43,13 +43,13 @@ export default function CreateGameModal() {
       toast.loading('Transaction pending...', { id: toastId });
       await tx.wait();
 
-      toast.success('Game created successfully!', { id: toastId });
+      toast.success('Game created! Click Refresh to see it in the list.', { 
+        id: toastId,
+        duration: 5000
+      });
       setShowCreateModal(false);
       
-      setTimeout(() => {
-        loadGames();
-        loadMyGames();
-      }, 1000);
+      // NE PAS recharger automatiquement
     } catch (error) {
       console.error('Create game error:', error);
       toast.error(`${error.reason || 'Failed to create game'}`, { id: toastId });

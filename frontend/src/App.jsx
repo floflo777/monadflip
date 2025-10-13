@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Web3Provider, useWeb3 } from './context/Web3Context';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -20,20 +20,24 @@ function AppContent() {
   const { contract, account, provider } = useWeb3();
   const { loadGames, loadMyGames } = useGames();
   
+  const hasLoadedInitial = useRef(false);
+  
   useGameHistory(contract, account);
 
   useEffect(() => {
     checkUrlReferral();
   }, []);
 
+  // Charger UNE SEULE FOIS au démarrage
   useEffect(() => {
-    if (contract || provider?.contract) {
+    if ((contract || provider?.contract) && !hasLoadedInitial.current) {
+      hasLoadedInitial.current = true;
       loadGames();
       if (account) {
         loadMyGames();
       }
     }
-  }, [contract, provider?.contract, account]);
+  }, [contract, provider?.contract, account, loadGames, loadMyGames]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
