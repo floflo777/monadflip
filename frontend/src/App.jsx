@@ -11,17 +11,21 @@ import LiveActivity from './components/activity/LiveActivity';
 import CoinFlipAnimation from './components/animations/CoinFlipAnimation';
 import CustomToaster from './components/ui/Toast';
 import { useGameStore } from './hooks/useGameStore';
+import { useGames } from './hooks/useGames';
 import { useGameHistory } from './hooks/useGameHistory';
 import { checkUrlReferral } from './utils/referral';
 
 function AppContent() {
   const { showCreateModal, showAnimation, flipResult, resultMessage } = useGameStore();
   const { contract, account } = useWeb3();
+  const { loadGames, loadMyGames } = useGames();
   
   useGameHistory(contract, account);
 
   useEffect(() => {
     checkUrlReferral();
+    loadGames();
+    loadMyGames();
   }, []);
 
   return (

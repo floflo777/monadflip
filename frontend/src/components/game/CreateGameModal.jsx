@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../../context/Web3Context';
 import { useGameStore } from '../../hooks/useGameStore';
+import { useGames } from '../../hooks/useGames';
 import { ethers } from 'ethers';
 import { MIN_BET, DURATION_OPTIONS } from '../../utils/constants';
 import { getReferral } from '../../utils/referral';
@@ -9,6 +10,7 @@ import toast from 'react-hot-toast';
 export default function CreateGameModal() {
   const { contract, account } = useWeb3();
   const { setShowCreateModal } = useGameStore();
+  const { loadGames, loadMyGames } = useGames();
   const [betAmount, setBetAmount] = useState('');
   const [choice, setChoice] = useState(true);
   const [duration, setDuration] = useState(86400);
@@ -43,6 +45,11 @@ export default function CreateGameModal() {
 
       toast.success('Game created successfully!', { id: toastId });
       setShowCreateModal(false);
+      
+      setTimeout(() => {
+        loadGames();
+        loadMyGames();
+      }, 1000);
     } catch (error) {
       console.error('Create game error:', error);
       toast.error(`${error.reason || 'Failed to create game'}`, { id: toastId });

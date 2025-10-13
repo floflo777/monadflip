@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useGameStore } from './useGameStore';
 import { ethers } from 'ethers';
@@ -69,47 +69,6 @@ export const useGames = () => {
       console.error('Error loading my games:', error);
     }
   }, [contract, account, setMyGames]);
-
-  useEffect(() => {
-    if (contract || provider?.contract) {
-      loadGames();
-      loadMyGames();
-
-      if (contract) {
-        const filterCreated = contract.filters.GameCreated();
-        const filterJoined = contract.filters.GameJoined();
-        const filterResolved = contract.filters.GameResolved();
-        const filterCancelled = contract.filters.GameCancelled();
-
-        contract.on(filterCreated, () => {
-          setTimeout(loadGames, 2000);
-          setTimeout(loadMyGames, 2000);
-        });
-
-        contract.on(filterJoined, () => {
-          setTimeout(loadGames, 2000);
-          setTimeout(loadMyGames, 2000);
-        });
-
-        contract.on(filterResolved, () => {
-          setTimeout(loadGames, 2000);
-          setTimeout(loadMyGames, 2000);
-        });
-
-        contract.on(filterCancelled, () => {
-          setTimeout(loadGames, 2000);
-          setTimeout(loadMyGames, 2000);
-        });
-
-        return () => {
-          contract.removeAllListeners(filterCreated);
-          contract.removeAllListeners(filterJoined);
-          contract.removeAllListeners(filterResolved);
-          contract.removeAllListeners(filterCancelled);
-        };
-      }
-    }
-  }, [contract, provider, loadGames, loadMyGames]);
 
   return { loadGames, loadMyGames };
 };

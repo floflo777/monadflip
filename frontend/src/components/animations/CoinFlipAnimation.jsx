@@ -10,7 +10,7 @@ export default function CoinFlipAnimation({ flipResult }) {
 
     const targetRotation = flipResult.startsWith('heads') ? 720 : 900;
     
-    const duration = 2000;
+    const duration = 3500;
     const startTime = Date.now();
 
     const animate = () => {
@@ -51,7 +51,12 @@ export default function CoinFlipAnimation({ flipResult }) {
             border: '8px solid #2C7A7B'
           }}
         >
-          <div className="text-9xl font-bold text-white">🐋</div>
+          <div 
+            className="text-9xl font-bold text-white"
+            style={{ transform: 'rotate(180deg)' }}
+          >
+            🐋
+          </div>
         </div>
 
         <div
@@ -63,7 +68,13 @@ export default function CoinFlipAnimation({ flipResult }) {
             border: '8px solid #CC8400'
           }}
         >
-          <div className="text-9xl font-bold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+          <div 
+            className="text-9xl font-bold text-white" 
+            style={{ 
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+              transform: 'rotate(180deg)'
+            }}
+          >
             $
           </div>
         </div>

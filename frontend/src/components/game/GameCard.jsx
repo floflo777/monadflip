@@ -1,6 +1,7 @@
 import React from 'react';
 import { useWeb3 } from '../../context/Web3Context';
 import { useGameStore } from '../../hooks/useGameStore';
+import { useGames } from '../../hooks/useGames';
 import { shortAddress, formatTimeLeft, formatAmount } from '../../utils/formatting';
 import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
@@ -8,6 +9,7 @@ import toast from 'react-hot-toast';
 export default function GameCard({ game, featured = false }) {
   const { contract, account } = useWeb3();
   const { setShowAnimation, setFlipResult, setResultMessage } = useGameStore();
+  const { loadGames, loadMyGames } = useGames();
 
   const handleJoin = async () => {
     if (!account) {
@@ -69,7 +71,7 @@ export default function GameCard({ game, featured = false }) {
         message = `You won ${winAmount} MON!`;
         toast.success(message, { 
           id: toastId,
-          duration: 6000,
+          duration: 8000,
           style: {
             background: 'linear-gradient(135deg, #4FD1C5 0%, #38B2AC 100%)',
             color: '#fff',
@@ -79,7 +81,7 @@ export default function GameCard({ game, featured = false }) {
         message = `You lost ${game.betAmount} MON`;
         toast.error(`${message}\nBetter luck next time!`, { 
           id: toastId,
-          duration: 4000,
+          duration: 6000,
           style: {
             background: '#14044d',
             color: '#fff',
@@ -94,7 +96,9 @@ export default function GameCard({ game, featured = false }) {
         setShowAnimation(false);
         setFlipResult(null);
         setResultMessage('');
-      }, 5000);
+        loadGames();
+        loadMyGames();
+      }, 7000);
     } catch (error) {
       console.error('Join game error:', error);
       
