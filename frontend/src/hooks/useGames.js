@@ -75,11 +75,6 @@ export const useGames = () => {
       loadGames();
       loadMyGames();
 
-      const refreshInterval = setInterval(() => {
-        loadGames();
-        loadMyGames();
-      }, 5000);
-
       if (contract) {
         const filterCreated = contract.filters.GameCreated();
         const filterJoined = contract.filters.GameJoined();
@@ -87,23 +82,23 @@ export const useGames = () => {
         const filterCancelled = contract.filters.GameCancelled();
 
         contract.on(filterCreated, () => {
-          setTimeout(loadGames, 500);
-          setTimeout(loadMyGames, 500);
+          setTimeout(loadGames, 1000);
+          setTimeout(loadMyGames, 1000);
         });
 
         contract.on(filterJoined, () => {
-          setTimeout(loadGames, 500);
-          setTimeout(loadMyGames, 500);
+          setTimeout(loadGames, 1000);
+          setTimeout(loadMyGames, 1000);
         });
 
         contract.on(filterResolved, () => {
-          setTimeout(loadGames, 500);
-          setTimeout(loadMyGames, 500);
+          setTimeout(loadGames, 1000);
+          setTimeout(loadMyGames, 1000);
         });
 
         contract.on(filterCancelled, () => {
-          setTimeout(loadGames, 500);
-          setTimeout(loadMyGames, 500);
+          setTimeout(loadGames, 1000);
+          setTimeout(loadMyGames, 1000);
         });
 
         return () => {
@@ -111,11 +106,8 @@ export const useGames = () => {
           contract.removeAllListeners(filterJoined);
           contract.removeAllListeners(filterResolved);
           contract.removeAllListeners(filterCancelled);
-          clearInterval(refreshInterval);
         };
       }
-
-      return () => clearInterval(refreshInterval);
     }
   }, [contract, provider, loadGames, loadMyGames]);
 
