@@ -10,7 +10,18 @@ export default function GameCard({ game, featured = false }) {
   const { setShowAnimation, setFlipResult, setResultMessage } = useGameStore();
 
   const handleJoin = async () => {
-    if (!contract || !account) {
+    if (!account) {
+      toast.error('Please connect your wallet first', {
+        duration: 4000,
+        style: {
+          background: '#14044d',
+          color: '#fff',
+        },
+      });
+      return;
+    }
+
+    if (!contract) {
       toast.error('Please connect your wallet');
       return;
     }
@@ -29,7 +40,13 @@ export default function GameCard({ game, featured = false }) {
 
       toast.loading('Transaction pending...', { id: toastId });
 
-      await tx.wait();
+      const receipt = await tx.wait();
+
+      if (!receipt || receipt.status === 0) {
+        throw new Error('Transaction failed');
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const updatedGame = await contract.getGame(game.gameId);
       const winner = updatedGame.winner;
@@ -54,7 +71,8 @@ export default function GameCard({ game, featured = false }) {
           id: toastId,
           duration: 6000,
           style: {
-            background: 'linear-gradient(135deg, #4FD1C5 0%, #37367b 100%)',
+            background: 'linear-gradient(135deg, #4FD1C5 0%, #38B2AC 100%)',
+            color: '#fff',
           },
         });
       } else {
@@ -63,8 +81,8 @@ export default function GameCard({ game, featured = false }) {
           id: toastId,
           duration: 4000,
           style: {
-            background: '#37367b',
-            opacity: 0.9,
+            background: '#14044d',
+            color: '#fff',
           },
         });
       }
@@ -79,7 +97,14 @@ export default function GameCard({ game, featured = false }) {
       }, 5000);
     } catch (error) {
       console.error('Join game error:', error);
-      toast.error(`${error.reason || 'Transaction failed'}`, { id: toastId });
+      
+      if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
+        toast.error('Transaction rejected', { id: toastId });
+      } else if (error.message && error.message.includes('Game already joined')) {
+        toast.error('This game has already been joined', { id: toastId });
+      } else {
+        toast.error(`${error.reason || error.message || 'Transaction failed'}`, { id: toastId });
+      }
     }
   };
 

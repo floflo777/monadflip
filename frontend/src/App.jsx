@@ -6,7 +6,6 @@ import ProtocolStats from './components/protocol/ProtocolStats';
 import GameList from './components/game/GameList';
 import CreateGameModal from './components/game/CreateGameModal';
 import ReferralSection from './components/game/ReferralSection';
-import MyGames from './components/game/MyGames';
 import GameHistory from './components/game/GameHistory';
 import LiveActivity from './components/activity/LiveActivity';
 import CoinFlipAnimation from './components/animations/CoinFlipAnimation';
@@ -40,7 +39,6 @@ function AppContent() {
           <div className="space-y-6">
             <LiveActivity />
             <ReferralSection />
-            <MyGames />
             <GameHistory />
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useWeb3 } from '../../context/Web3Context';
 import { useGameStore } from '../../hooks/useGameStore';
 import { useGames } from '../../hooks/useGames';
 import GameCard from './GameCard';
@@ -6,9 +7,13 @@ import GameFilters from './GameFilters';
 import StakeFilter from './StakeFilter';
 import { STAKE_CATEGORIES } from '../../utils/constants';
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 export default function GameList() {
-  const { games, loading } = useGameStore();
+  const { account } = useWeb3();
+  const { games, myGames, loading } = useGameStore();
   const { loadGames } = useGames();
+  const [showMyGames, setShowMyGames] = useState(false);
   const [filteredGames, setFilteredGames] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(STAKE_CATEGORIES[0]);
   const [filters, setFilters] = useState({
@@ -24,7 +29,11 @@ export default function GameList() {
   }, []);
 
   useEffect(() => {
-    let result = [...games];
+    let result = showMyGames ? [...myGames] : [...games];
+
+    if (!showMyGames && account) {
+      result = result.filter(g => g.player1.toLowerCase() !== account.toLowerCase());
+    }
 
     if (selectedCategory.label !== 'All') {
       result = result.filter(g => {
@@ -53,17 +62,67 @@ export default function GameList() {
 
     setFilteredGames(result);
     setCurrentPage(1);
-  }, [games, filters, selectedCategory]);
+  }, [games, myGames, filters, selectedCategory, showMyGames, account]);
 
   const indexOfLastGame = currentPage * gamesPerPage;
   const indexOfFirstGame = indexOfLastGame - gamesPerPage;
   const currentGames = filteredGames.slice(indexOfFirstGame, indexOfLastGame);
   const totalPages = Math.ceil(filteredGames.length / gamesPerPage);
 
+  const now = Math.floor(Date.now() / 1000);
+  
+  const expiredGames = showMyGames ? filteredGames.filter(game => {
+    const isCreator = game.player1.toLowerCase() === account?.toLowerCase();
+    return isCreator && 
+           now >= game.expirationTime && 
+           game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
+  }) : [];
+
+  const activeMyGames = showMyGames ? filteredGames.filter(game => {
+    return now < game.expirationTime && 
+           game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
+  }) : [];
+
+  const playingGames = showMyGames ? filteredGames.filter(game => 
+    game.player2.toLowerCase() !== ZERO_ADDRESS.toLowerCase()
+  ) : [];
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-primary mb-4">All Games</h2>
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => setShowMyGames(false)}
+            className={`px-6 py-3 rounded-lg font-bold text-lg transition ${
+              !showMyGames
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 text-primary hover:bg-gray-300'
+            }`}
+          >
+            All Games
+          </button>
+          
+          {account && (
+            <button
+              onClick={() => setShowMyGames(true)}
+              className={`px-6 py-3 rounded-lg font-bold text-lg transition ${
+                showMyGames
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-200 text-primary hover:bg-gray-300'
+              }`}
+            >
+              My Games
+            </button>
+          )}
+        </div>
+
+        {showMyGames && expiredGames.length > 0 && (
+          <div className="mb-6 p-4 bg-orange-50 border-2 border-orange-300 rounded-lg">
+            <p className="text-orange-700 font-bold">
+              You have {expiredGames.length} expired {expiredGames.length === 1 ? 'game' : 'games'} to withdraw!
+            </p>
+          </div>
+        )}
         
         <StakeFilter 
           selectedCategory={selectedCategory}
@@ -86,62 +145,105 @@ export default function GameList() {
         </div>
       ) : currentGames.length === 0 ? (
         <div className="bg-white rounded-3xl p-8 text-center">
-          <p className="text-gray-500 text-lg">No games in this category</p>
-          <p className="text-gray-400 mt-2">Try a different filter or create one!</p>
+          <p className="text-gray-500 text-lg">
+            {showMyGames ? 'You have no games yet' : 'No games in this category'}
+          </p>
+          <p className="text-gray-400 mt-2">
+            {showMyGames ? 'Create or join a game to get started!' : 'Try a different filter or create one!'}
+          </p>
         </div>
       ) : (
         <>
-          <div className="space-y-3">
-            {currentGames.map((game) => (
-              <GameCard key={game.gameId} game={game} />
-            ))}
-          </div>
+          {showMyGames ? (
+            <div className="space-y-6">
+              {expiredGames.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold text-orange-600 mb-3">Expired - Withdraw Now</h3>
+                  <div className="space-y-3">
+                    {expiredGames.map((game) => (
+                      <GameCard key={game.gameId} game={game} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-6">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
+              {activeMyGames.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold text-primary mb-3">Active Games</h3>
+                  <div className="space-y-3">
+                    {activeMyGames.map((game) => (
+                      <GameCard key={game.gameId} game={game} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`px-4 py-2 rounded-lg font-semibold ${
-                      currentPage === pageNum
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 text-primary hover:bg-gray-300'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
+              {playingGames.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold text-accent mb-3">In Progress</h3>
+                  <div className="space-y-3">
+                    {playingGames.map((game) => (
+                      <GameCard key={game.gameId} game={game} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {currentGames.map((game) => (
+                  <GameCard key={game.gameId} game={game} />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-4 py-2 rounded-lg font-semibold ${
+                          currentPage === pageNum
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-200 text-primary hover:bg-gray-300'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

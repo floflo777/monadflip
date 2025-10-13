@@ -42,40 +42,42 @@ export default function CoinFlipAnimation({ flipResult }) {
           transition: isFlipping ? 'none' : 'transform 0.6s ease-out'
         }}
       >
-        {/* Heads - Baleine */}
         <div
-          className="absolute inset-0 rounded-full shadow-2xl flex items-center justify-center overflow-hidden bg-white"
+          className="absolute inset-0 rounded-full shadow-2xl flex items-center justify-center overflow-hidden"
           style={{
             backfaceVisibility: 'hidden',
-            transform: 'rotateY(0deg)'
+            transform: 'rotateY(0deg)',
+            background: 'linear-gradient(135deg, #4FD1C5 0%, #38B2AC 100%)',
+            border: '8px solid #2C7A7B'
           }}
         >
-          <img 
-            src="/heads.png"
-            alt="Heads"
-            className="w-full h-full object-cover"
-          />
+          <div className="text-9xl font-bold text-white">🐋</div>
         </div>
 
-        {/* Tails - Dollar */}
         <div
-          className="absolute inset-0 rounded-full shadow-2xl flex items-center justify-center overflow-hidden bg-white"
+          className="absolute inset-0 rounded-full shadow-2xl flex items-center justify-center overflow-hidden"
           style={{
             backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)'
+            transform: 'rotateY(180deg)',
+            background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+            border: '8px solid #CC8400'
           }}
         >
-          <img 
-            src="/tails.png"
-            alt="Tails"
-            className="w-full h-full object-cover"
-          />
+          <div className="text-9xl font-bold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+            $
+          </div>
         </div>
       </div>
 
       {!isFlipping && (
-        <div className="absolute bottom-8 text-3xl font-bold text-white animate-fadeIn">
-          {flipResult.startsWith('heads') ? 'HEADS 🐋' : 'TAILS 💰'}
+        <div 
+          className="absolute bottom-8 text-5xl font-bold animate-fadeIn"
+          style={{ 
+            color: '#FFD700',
+            textShadow: '0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.3)'
+          }}
+        >
+          {flipResult.startsWith('heads') ? 'HEADS' : 'TAILS'}
         </div>
       )}
     </div>

@@ -81,17 +81,18 @@ export const useGames = () => {
         const filterResolved = contract.filters.GameResolved();
 
         contract.on(filterCreated, () => {
-          setTimeout(loadGames, 2000);
+          setTimeout(loadGames, 1000);
+          setTimeout(loadMyGames, 1000);
         });
 
         contract.on(filterJoined, () => {
-          setTimeout(loadGames, 2000);
-          setTimeout(loadMyGames, 2000);
+          setTimeout(loadGames, 1000);
+          setTimeout(loadMyGames, 1000);
         });
 
         contract.on(filterResolved, () => {
-          setTimeout(loadGames, 2000);
-          setTimeout(loadMyGames, 2000);
+          setTimeout(loadGames, 1000);
+          setTimeout(loadMyGames, 1000);
         });
 
         return () => {
