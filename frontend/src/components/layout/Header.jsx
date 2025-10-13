@@ -28,7 +28,7 @@ export default function Header() {
 
       <div className="flex items-center gap-4">
         {MONAD_FAUCET && (
-          
+          <a
             href={MONAD_FAUCET}
             target="_blank"
             rel="noopener noreferrer"
