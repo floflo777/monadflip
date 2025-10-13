@@ -41,7 +41,7 @@ export default function GameHistory() {
               <div className="flex justify-between items-center">
                 <div>
                   <span className={`font-semibold ${game.isWinner ? 'text-accent' : 'text-gray-600'}`}>
-                    {game.isWinner ? '✨ Won' : '◐ Lost'}
+                    {game.isWinner ? 'Won' : 'Lost'}
                   </span>
                   <span className="ml-2 text-primary font-semibold">
                     {amount} MON

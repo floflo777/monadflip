@@ -49,7 +49,7 @@ export default function Ticker() {
   ];
 
   return (
-    <div className="bg-primary-dark text-white py-2 overflow-hidden border-b-2 border-accent">
+    <div className="bg-primary-dark text-white py-2 overflow-hidden border-b-2 border-accent relative z-0">
       <div className="flex animate-ticker whitespace-nowrap">
         {[...tickerItems, ...tickerItems].map((item, index) => (
           <div key={index} className="inline-flex items-center mx-8">

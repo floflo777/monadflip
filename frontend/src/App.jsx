@@ -3,7 +3,6 @@ import { Web3Provider, useWeb3 } from './context/Web3Context';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Ticker from './components/layout/Ticker';
-import HeroSection from './components/layout/HeroSection';
 import ProtocolStats from './components/protocol/ProtocolStats';
 import GameList from './components/game/GameList';
 import CreateGameModal from './components/game/CreateGameModal';
@@ -43,7 +42,6 @@ function AppContent() {
       <Ticker />
       
       <main className="container mx-auto px-4 py-8 flex-1">
-        <HeroSection />
         <ProtocolStats />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
