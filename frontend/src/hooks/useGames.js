@@ -9,34 +9,36 @@ export const useGames = () => {
   const { contract, account, provider } = useWeb3();
   const { setGames, setMyGames, setLoading } = useGameStore();
   
-  const isLoadingGames = useRef(false);
-  const isLoadingMyGames = useRef(false);
+  const abortControllerGames = useRef(null);
+  const abortControllerMyGames = useRef(null);
 
   const loadGames = useCallback(async () => {
-    if (isLoadingGames.current) {
-      console.log('loadGames already in progress');
-      return;
+    // Annuler l'appel précédent s'il existe
+    if (abortControllerGames.current) {
+      console.log('Cancelling previous loadGames');
+      abortControllerGames.current.abort();
     }
+
+    abortControllerGames.current = new AbortController();
 
     const readContract = contract || provider?.contract;
     if (!readContract) return;
 
-    isLoadingGames.current = true;
     setLoading(true);
 
     try {
       const openGameIds = await readContract.getOpenGames();
       
+      if (abortControllerGames.current.signal.aborted) return;
+
       if (openGameIds.length === 0) {
         setGames([]);
-        isLoadingGames.current = false;
         setLoading(false);
         return;
       }
 
       console.log(`Loading ${openGameIds.length} games...`);
 
-      // Charger TOUS les jeux en une seule fois
       const gamesData = await Promise.all(
         openGameIds.map(async (id) => {
           try {
@@ -60,6 +62,8 @@ export const useGames = () => {
         })
       );
 
+      if (abortControllerGames.current.signal.aborted) return;
+
       const validGames = gamesData.filter(g => g !== null);
 
       const openGames = validGames.filter(g => 
@@ -69,36 +73,40 @@ export const useGames = () => {
       console.log(`Loaded ${openGames.length} open games out of ${openGameIds.length} total`);
       setGames(openGames);
     } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('loadGames was aborted');
+        return;
+      }
       console.error('Error loading games:', error);
-      setGames([]); // Reset en cas d'erreur
     } finally {
       setLoading(false);
-      isLoadingGames.current = false;
+      abortControllerGames.current = null;
     }
   }, [contract, provider, setGames, setLoading]);
 
   const loadMyGames = useCallback(async () => {
     if (!contract || !account) return;
 
-    if (isLoadingMyGames.current) {
-      console.log('loadMyGames already in progress');
-      return;
+    // Annuler l'appel précédent s'il existe
+    if (abortControllerMyGames.current) {
+      console.log('Cancelling previous loadMyGames');
+      abortControllerMyGames.current.abort();
     }
 
-    isLoadingMyGames.current = true;
+    abortControllerMyGames.current = new AbortController();
 
     try {
       const myGameIds = await contract.getMyGames(account);
       
+      if (abortControllerMyGames.current.signal.aborted) return;
+
       if (myGameIds.length === 0) {
         setMyGames([]);
-        isLoadingMyGames.current = false;
         return;
       }
 
       console.log(`Loading ${myGameIds.length} of my games...`);
 
-      // Charger TOUS les jeux en une seule fois
       const myGamesData = await Promise.all(
         myGameIds.map(async (id) => {
           try {
@@ -122,14 +130,19 @@ export const useGames = () => {
         })
       );
 
+      if (abortControllerMyGames.current.signal.aborted) return;
+
       const validMyGames = myGamesData.filter(g => g !== null);
       console.log(`Loaded ${validMyGames.length} of my games`);
       setMyGames(validMyGames);
     } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('loadMyGames was aborted');
+        return;
+      }
       console.error('Error loading my games:', error);
-      setMyGames([]); // Reset en cas d'erreur
     } finally {
-      isLoadingMyGames.current = false;
+      abortControllerMyGames.current = null;
     }
   }, [contract, account, setMyGames]);
 

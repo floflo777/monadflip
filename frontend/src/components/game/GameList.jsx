@@ -24,13 +24,22 @@ export default function GameList() {
   const [currentPage, setCurrentPage] = useState(1);
   const gamesPerPage = 10;
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     if (showMyGames) {
+      await loadMyGames();
+    } else {
+      await loadGames();
+    }
+  };
+
+  // Charger automatiquement quand on change d'onglet
+  useEffect(() => {
+    if (showMyGames && account) {
       loadMyGames();
     } else {
       loadGames();
     }
-  };
+  }, [showMyGames, account]);
 
   useEffect(() => {
     let result = showMyGames ? [...myGames] : [...games];
