@@ -80,15 +80,6 @@ export default function GameList() {
            game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
   }) : [];
 
-  const activeMyGames = showMyGames ? filteredGames.filter(game => {
-    return now < game.expirationTime && 
-           game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
-  }) : [];
-
-  const playingGames = showMyGames ? filteredGames.filter(game => 
-    game.player2.toLowerCase() !== ZERO_ADDRESS.toLowerCase()
-  ) : [];
-
   return (
     <div className="space-y-6">
       <div>
@@ -97,7 +88,7 @@ export default function GameList() {
             onClick={() => setShowMyGames(false)}
             className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition ${
               !showMyGames
-                ? 'bg-primary/20 text-primary'
+                ? 'bg-primary text-white'
                 : 'text-primary hover:glass-strong'
             }`}
           >
@@ -109,7 +100,7 @@ export default function GameList() {
               onClick={() => setShowMyGames(true)}
               className={`glass-card px-6 py-3 rounded-lg font-bold text-lg transition ${
                 showMyGames
-                  ? 'bg-primary/20 text-primary'
+                  ? 'bg-primary text-white'
                   : 'text-primary hover:glass-strong'
               }`}
             >
@@ -213,7 +204,7 @@ export default function GameList() {
                         onClick={() => setCurrentPage(pageNum)}
                         className={`glass-card px-4 py-2 rounded-lg font-semibold transition ${
                           currentPage === pageNum
-                            ? 'bg-primary/20 text-primary'
+                            ? 'bg-primary text-white'
                             : 'text-primary hover:glass-strong'
                         }`}
                       >
@@ -268,7 +259,7 @@ export default function GameList() {
                         onClick={() => setCurrentPage(pageNum)}
                         className={`glass-card px-4 py-2 rounded-lg font-semibold transition ${
                           currentPage === pageNum
-                            ? 'bg-primary/20 text-primary'
+                            ? 'bg-primary text-white'
                             : 'text-primary hover:glass-strong'
                         }`}
                       >

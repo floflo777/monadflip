@@ -127,7 +127,7 @@ export default function CreateGameModal() {
         <div className="flex gap-4 mt-6">
           <button
             onClick={handleCreate}
-            className="flex-1 bg-gradient-to-r from-accent to-primary text-white py-3 rounded-lg font-bold hover:shadow-lg transition-all"
+            className="flex-1 bg-accent text-white py-3 rounded-lg font-bold hover:shadow-lg transition-all"
           >
             Create
           </button>
