@@ -29,9 +29,14 @@ export const useGames = () => {
       
       if (openGameIds.length === 0) {
         setGames([]);
+        isLoadingGames.current = false;
+        setLoading(false);
         return;
       }
 
+      console.log(`Loading ${openGameIds.length} games...`);
+
+      // Charger TOUS les jeux en une seule fois
       const gamesData = await Promise.all(
         openGameIds.map(async (id) => {
           try {
@@ -61,9 +66,11 @@ export const useGames = () => {
         g.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase() && !g.resolved
       );
 
+      console.log(`Loaded ${openGames.length} open games out of ${openGameIds.length} total`);
       setGames(openGames);
     } catch (error) {
       console.error('Error loading games:', error);
+      setGames([]); // Reset en cas d'erreur
     } finally {
       setLoading(false);
       isLoadingGames.current = false;
@@ -85,9 +92,13 @@ export const useGames = () => {
       
       if (myGameIds.length === 0) {
         setMyGames([]);
+        isLoadingMyGames.current = false;
         return;
       }
 
+      console.log(`Loading ${myGameIds.length} of my games...`);
+
+      // Charger TOUS les jeux en une seule fois
       const myGamesData = await Promise.all(
         myGameIds.map(async (id) => {
           try {
@@ -112,9 +123,11 @@ export const useGames = () => {
       );
 
       const validMyGames = myGamesData.filter(g => g !== null);
+      console.log(`Loaded ${validMyGames.length} of my games`);
       setMyGames(validMyGames);
     } catch (error) {
       console.error('Error loading my games:', error);
+      setMyGames([]); // Reset en cas d'erreur
     } finally {
       isLoadingMyGames.current = false;
     }
