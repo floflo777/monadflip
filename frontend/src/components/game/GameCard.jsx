@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
-export default function GameCard({ game, isMyGame = false }) {
+export default function GameCard({ game, isMyGame = false, section = null }) {
   const { contract, account } = useWeb3();
   const { setShowAnimation, setFlipResult, setResultMessage } = useGameStore();
   const { loadGames, loadMyGames } = useGames();
@@ -69,7 +69,7 @@ export default function GameCard({ game, isMyGame = false }) {
       const betNum = parseFloat(game.betAmount);
       let message = '';
       if (account.toLowerCase() === winner.toLowerCase()) {
-        const winAmount = (betNum * 1.999).toFixed(4);
+        const winAmount = (betNum * 1.985).toFixed(4);
         message = `You won ${winAmount} MON!`;
         toast.success(message, { 
           id: toastId,
@@ -98,7 +98,6 @@ export default function GameCard({ game, isMyGame = false }) {
         setShowAnimation(false);
         setFlipResult(null);
         setResultMessage('');
-        // NE PAS recharger automatiquement
       }, 7000);
     } catch (error) {
       console.error('Join game error:', error);
@@ -130,7 +129,6 @@ export default function GameCard({ game, isMyGame = false }) {
         id: toastId,
         duration: 5000
       });
-      // NE PAS recharger automatiquement
     } catch (error) {
       console.error('Cancel error:', error);
       toast.error(`${error.reason || 'Failed to cancel'}`, { id: toastId });
@@ -150,7 +148,6 @@ export default function GameCard({ game, isMyGame = false }) {
         id: toastId,
         duration: 5000
       });
-      // NE PAS recharger automatiquement
     } catch (error) {
       console.error('Withdraw error:', error);
       toast.error(`${error.reason || 'Failed to withdraw'}`, { id: toastId });
@@ -163,19 +160,18 @@ export default function GameCard({ game, isMyGame = false }) {
   const isCreator = account && game.player1.toLowerCase() === account.toLowerCase();
   const isWaiting = game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
 
+  // Rendu pour My Games avec section
   if (isMyGame) {
-    if (isExpired && isWaiting) {
+    if (section === 'expired') {
       return (
         <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-orange-500">
           <div className="flex-1">
             <div className="flex items-center gap-2">
+              <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">EXPIRED</span>
               <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
             </div>
             <p className="text-sm text-white/90 mt-1">
               {game.player1Choice ? 'Heads' : 'Tails'} | {formatAmount(game.betAmount)} MON
-            </p>
-            <p className="text-xs mt-2 text-white/80 font-bold">
-              EXPIRED - WITHDRAW NOW
             </p>
           </div>
 
@@ -189,11 +185,12 @@ export default function GameCard({ game, isMyGame = false }) {
       );
     }
 
-    if (isWaiting) {
+    if (section === 'active') {
       return (
         <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-primary">
           <div className="flex-1">
             <div className="flex items-center gap-2">
+              <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">ACTIVE</span>
               <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
             </div>
             <p className="text-sm text-gray-300 mt-1">
@@ -214,10 +211,12 @@ export default function GameCard({ game, isMyGame = false }) {
       );
     }
 
+    // Section playing
     return (
       <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-accent">
         <div className="flex-1">
           <div className="flex items-center gap-2">
+            <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">IN PROGRESS</span>
             <p className="text-lg font-semibold">{shortAddress(game.player1)}</p>
           </div>
           <p className="text-sm text-white/90 mt-1">
@@ -227,14 +226,11 @@ export default function GameCard({ game, isMyGame = false }) {
             Playing vs {shortAddress(game.player2)}
           </p>
         </div>
-
-        <div className="text-right">
-          <p className="text-sm font-bold">IN PROGRESS</p>
-        </div>
       </div>
     );
   }
 
+  // Rendu pour All Games
   return (
     <div className="rounded-3xl p-6 flex items-center justify-between text-white bg-primary">
       <div className="flex-1">

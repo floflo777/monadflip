@@ -13,6 +13,28 @@ interface ICoinFlip {
         address referrer;
         bool resolved;
     }
+    
+    struct PlayerStats {
+        uint256 gamesCreated;
+        uint256 gamesJoined;
+        uint256 gamesWon;
+        uint256 gamesLost;
+        uint256 totalVolume;
+        uint256 totalWon;
+    }
+    
+    struct ReferralStats {
+        uint256 totalEarned;
+        uint256 gamesReferred;
+    }
+    
+    struct ProtocolStats {
+        uint256 totalGamesCreated;
+        uint256 totalGamesResolved;
+        uint256 totalVolume;
+        uint256 totalPlayers;
+        uint256 activeGames;
+    }
 
     event GameCreated(
         uint256 indexed gameId,
@@ -20,31 +42,51 @@ interface ICoinFlip {
         uint256 betAmount,
         bool player1Choice,
         uint256 expirationTime,
-        address referrer
+        address referrer,
+        uint256 timestamp
     );
 
     event GameJoined(
         uint256 indexed gameId,
-        address indexed player2
+        address indexed player2,
+        uint256 timestamp
     );
 
     event GameResolved(
         uint256 indexed gameId,
         address indexed winner,
         bool result,
-        uint256 payout
+        uint256 payout,
+        uint256 timestamp
     );
 
     event GameCancelled(
         uint256 indexed gameId,
-        address indexed player1
+        address indexed player1,
+        uint256 timestamp
+    );
+    
+    event GameExpired(
+        uint256 indexed gameId,
+        uint256 timestamp
     );
 
     event ReferralReward(
         address indexed referrer,
         uint256 amount,
-        uint256 indexed gameId
+        uint256 indexed gameId,
+        uint256 timestamp
     );
+    
+    event ReferralWithdrawn(
+        address indexed referrer,
+        uint256 amount,
+        uint256 timestamp
+    );
+    
+    event Paused(uint256 timestamp);
+    event Unpaused(uint256 timestamp);
+    event EmergencyWithdraw(address indexed owner, uint256 amount, uint256 timestamp);
 
     function createGame(
         uint256 _betAmount,
@@ -60,8 +102,28 @@ interface ICoinFlip {
     function withdrawExpired(uint256 _gameId) external;
 
     function getGame(uint256 _gameId) external view returns (Game memory);
+    
+    function getGamesBatch(uint256[] calldata _gameIds) external view returns (Game[] memory);
 
     function getOpenGames() external view returns (uint256[] memory);
+    
+    function getOpenGamesWithData(uint256 limit, uint256 offset) 
+        external 
+        view 
+        returns (Game[] memory gamesData, uint256 totalCount);
 
     function getMyGames(address _player) external view returns (uint256[] memory);
+    
+    function getMyGamesWithData(address _player, uint256 limit, uint256 offset) 
+        external 
+        view 
+        returns (Game[] memory gamesData, uint256 totalCount);
+    
+    function getRecentGames(uint256 count) external view returns (Game[] memory);
+    
+    function getProtocolStats() external view returns (ProtocolStats memory);
+    
+    function getPlayerStats(address _player) external view returns (PlayerStats memory);
+    
+    function getReferralStats(address _referrer) external view returns (ReferralStats memory);
 }

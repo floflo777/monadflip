@@ -84,6 +84,7 @@ export default function GameList() {
 
   const now = Math.floor(Date.now() / 1000);
   
+  // Pour My Games, on groupe par statut
   const expiredGames = showMyGames ? filteredGames.filter(game => {
     const isCreator = game.player1.toLowerCase() === account?.toLowerCase();
     return isCreator && 
@@ -172,7 +173,7 @@ export default function GameList() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-primary">Loading games...</p>
         </div>
-      ) : currentGames.length === 0 ? (
+      ) : filteredGames.length === 0 ? (
         <div className="bg-white rounded-3xl p-8 text-center">
           <p className="text-gray-500 text-lg">
             {showMyGames ? 'You have no games yet' : 'No games in this category'}
@@ -184,41 +185,79 @@ export default function GameList() {
       ) : (
         <>
           {showMyGames ? (
+            // My Games avec sections mais pagination globale
             <div className="space-y-6">
-              {expiredGames.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-bold text-orange-600 mb-3">Expired - Withdraw Now</h3>
-                  <div className="space-y-3">
-                    {expiredGames.map((game) => (
-                      <GameCard key={game.gameId} game={game} isMyGame={true} />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {currentGames.map((game) => {
+                const isExpired = now >= game.expirationTime;
+                const isWaiting = game.player2.toLowerCase() === ZERO_ADDRESS.toLowerCase();
+                const isCreator = game.player1.toLowerCase() === account?.toLowerCase();
+                
+                let section = 'playing';
+                if (isExpired && isWaiting && isCreator) {
+                  section = 'expired';
+                } else if (isWaiting) {
+                  section = 'active';
+                }
+                
+                return (
+                  <GameCard 
+                    key={game.gameId} 
+                    game={game} 
+                    isMyGame={true}
+                    section={section}
+                  />
+                );
+              })}
+              
+              {totalPages > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
 
-              {activeMyGames.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-bold text-primary mb-3">Active Games</h3>
-                  <div className="space-y-3">
-                    {activeMyGames.map((game) => (
-                      <GameCard key={game.gameId} game={game} isMyGame={true} />
-                    ))}
-                  </div>
-                </div>
-              )}
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-4 py-2 rounded-lg font-semibold ${
+                          currentPage === pageNum
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-200 text-primary hover:bg-gray-300'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
 
-              {playingGames.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-bold text-accent mb-3">In Progress</h3>
-                  <div className="space-y-3">
-                    {playingGames.map((game) => (
-                      <GameCard key={game.gameId} game={game} isMyGame={true} />
-                    ))}
-                  </div>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
                 </div>
               )}
             </div>
           ) : (
+            // All Games avec pagination normale
             <>
               <div className="space-y-3">
                 {currentGames.map((game) => (

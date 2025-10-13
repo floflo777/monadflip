@@ -8,6 +8,31 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "EmergencyWithdraw",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "gameId",
           "type": "uint256"
@@ -17,6 +42,12 @@
           "internalType": "address",
           "name": "player1",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
         }
       ],
       "name": "GameCancelled",
@@ -60,9 +91,34 @@
           "internalType": "address",
           "name": "referrer",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
         }
       ],
       "name": "GameCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "GameExpired",
       "type": "event"
     },
     {
@@ -79,6 +135,12 @@
           "internalType": "address",
           "name": "player2",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
         }
       ],
       "name": "GameJoined",
@@ -110,9 +172,28 @@
           "internalType": "uint256",
           "name": "payout",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
         }
       ],
       "name": "GameResolved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "Paused",
       "type": "event"
     },
     {
@@ -135,9 +216,53 @@
           "internalType": "uint256",
           "name": "gameId",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
         }
       ],
       "name": "ReferralReward",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "referrer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "ReferralWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "Unpaused",
       "type": "event"
     },
     {
@@ -256,6 +381,72 @@
     {
       "inputs": [
         {
+          "internalType": "uint256[]",
+          "name": "_gameIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "getGamesBatch",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address payable",
+              "name": "player1",
+              "type": "address"
+            },
+            {
+              "internalType": "address payable",
+              "name": "player2",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "betAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address payable",
+              "name": "winner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expirationTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "player1Choice",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "referrer",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "resolved",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ICoinFlip.Game[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "_player",
           "type": "address"
@@ -273,6 +464,87 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_player",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "limit",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "offset",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMyGamesWithData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address payable",
+              "name": "player1",
+              "type": "address"
+            },
+            {
+              "internalType": "address payable",
+              "name": "player2",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "betAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address payable",
+              "name": "winner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expirationTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "player1Choice",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "referrer",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "resolved",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ICoinFlip.Game[]",
+          "name": "gamesData",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalCount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "getOpenGames",
       "outputs": [
@@ -280,6 +552,270 @@
           "internalType": "uint256[]",
           "name": "",
           "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "limit",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "offset",
+          "type": "uint256"
+        }
+      ],
+      "name": "getOpenGamesWithData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address payable",
+              "name": "player1",
+              "type": "address"
+            },
+            {
+              "internalType": "address payable",
+              "name": "player2",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "betAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address payable",
+              "name": "winner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expirationTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "player1Choice",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "referrer",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "resolved",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ICoinFlip.Game[]",
+          "name": "gamesData",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalCount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_player",
+          "type": "address"
+        }
+      ],
+      "name": "getPlayerStats",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "gamesCreated",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gamesJoined",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gamesWon",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gamesLost",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalVolume",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalWon",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ICoinFlip.PlayerStats",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getProtocolStats",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "totalGamesCreated",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalGamesResolved",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalVolume",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalPlayers",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "activeGames",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ICoinFlip.ProtocolStats",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "count",
+          "type": "uint256"
+        }
+      ],
+      "name": "getRecentGames",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address payable",
+              "name": "player1",
+              "type": "address"
+            },
+            {
+              "internalType": "address payable",
+              "name": "player2",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "betAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address payable",
+              "name": "winner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expirationTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "player1Choice",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "referrer",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "resolved",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ICoinFlip.Game[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_referrer",
+          "type": "address"
+        }
+      ],
+      "name": "getReferralStats",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "totalEarned",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gamesReferred",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ICoinFlip.ReferralStats",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",

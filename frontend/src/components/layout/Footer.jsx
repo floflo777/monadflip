@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="flex items-center gap-6">
             {/* Contract Link */}
             <a
-              href={`https://monad-testnet.socialscan.io/address/0x852ec10dca5f7463ced8465352c0c82ada8ac55b`}
+              href={`https://monad-testnet.socialscan.io/address/0xDa1615e13b9CE084fB16A60D6989Ed572CB3eb77`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-white hover:text-accent transition group"
@@ -81,12 +81,12 @@ export default function Footer() {
           <p className="text-xs text-gray-400"> 
             Contract: 
             <a
-              href={`https://monad-testnet.socialscan.io/address/0x852ec10dca5f7463ced8465352c0c82ada8ac55b`}
+              href={`https://monad-testnet.socialscan.io/address/0xDa1615e13b9CE084fB16A60D6989Ed572CB3eb77`}
               target="_blank"
               rel="noopener noreferrer"
               className="ml-2 text-accent hover:text-white transition font-mono"
             >
-              0x852ec10dca5f7463ced8465352c0c82ada8ac55b
+              0xDa1615e13b9CE084fB16A60D6989Ed572CB3eb77
             </a>
           </p>
         </div>

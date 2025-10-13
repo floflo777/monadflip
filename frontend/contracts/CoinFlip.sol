@@ -11,11 +11,45 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
     uint256 public constant HOUSE_FEE_BPS = 10;
     uint256 public constant REFERRAL_FEE_BPS = 5;
     
+    // Core mappings
     mapping(uint256 => Game) private games;
     mapping(address => uint256) public referralEarnings;
     
+    // Optimization indexes
+    uint256[] private activeGameIds;
+    mapping(uint256 => uint256) private gameIdToActiveIndex;
+    mapping(address => uint256[]) private playerToGameIds;
+    mapping(address => mapping(uint256 => uint256)) private playerGameIdToIndex;
+    
+    // Protocol stats
+    uint256 public totalGamesCreated;
+    uint256 public totalGamesResolved;
+    uint256 public totalVolume;
+    uint256 public totalPlayers;
+    mapping(address => bool) private hasPlayed;
+    
+    // Player stats
+    mapping(address => PlayerStats) public playerStats;
+    
+    // Referral stats
+    mapping(address => ReferralStats) public referralStats;
+    
+    // Pause mechanism
+    bool public paused;
+    
     constructor() {
         owner = payable(msg.sender);
+        paused = false;
+    }
+    
+    modifier whenNotPaused() {
+        require(!paused, "Contract is paused");
+        _;
+    }
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
     }
 
     function createGame(
@@ -23,16 +57,21 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
         bool _choice,
         uint256 _duration,
         address _referrer
-    ) external payable nonReentrant returns (uint256) {
+    ) external payable nonReentrant whenNotPaused returns (uint256) {
         require(msg.value == _betAmount, "Incorrect amount sent");
         require(_betAmount >= MIN_BET, "Bet too low");
         require(_duration >= 3600 && _duration <= 86400, "Invalid duration");
         
-        if (_referrer == msg.sender) {
+        if (_referrer == msg.sender || _referrer == address(0)) {
             _referrer = address(0);
         }
 
-        uint256 gameId = gameIdCounter++;
+        uint256 gameId = gameIdCounter;
+        unchecked {
+            gameIdCounter++;
+            totalGamesCreated++;
+        }
+        
         uint256 expirationTime = block.timestamp + _duration;
 
         games[gameId] = Game({
@@ -46,12 +85,34 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
             referrer: _referrer,
             resolved: false
         });
+        
+        // Add to active games
+        gameIdToActiveIndex[gameId] = activeGameIds.length;
+        activeGameIds.push(gameId);
+        
+        // Add to player games
+        playerGameIdToIndex[msg.sender][gameId] = playerToGameIds[msg.sender].length;
+        playerToGameIds[msg.sender].push(gameId);
+        
+        // Track unique player
+        if (!hasPlayed[msg.sender]) {
+            hasPlayed[msg.sender] = true;
+            unchecked {
+                totalPlayers++;
+            }
+        }
+        
+        // Update player stats
+        unchecked {
+            playerStats[msg.sender].gamesCreated++;
+            playerStats[msg.sender].totalVolume += _betAmount;
+        }
 
-        emit GameCreated(gameId, msg.sender, _betAmount, _choice, expirationTime, _referrer);
+        emit GameCreated(gameId, msg.sender, _betAmount, _choice, expirationTime, _referrer, block.timestamp);
         return gameId;
     }
 
-    function joinGame(uint256 _gameId) external payable nonReentrant {
+    function joinGame(uint256 _gameId) external payable nonReentrant whenNotPaused {
         Game storage game = games[_gameId];
         
         require(game.player1 != address(0), "Game does not exist");
@@ -63,7 +124,25 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
 
         game.player2 = payable(msg.sender);
         
-        emit GameJoined(_gameId, msg.sender);
+        // Add to player games
+        playerGameIdToIndex[msg.sender][_gameId] = playerToGameIds[msg.sender].length;
+        playerToGameIds[msg.sender].push(_gameId);
+        
+        // Track unique player
+        if (!hasPlayed[msg.sender]) {
+            hasPlayed[msg.sender] = true;
+            unchecked {
+                totalPlayers++;
+            }
+        }
+        
+        // Update player stats
+        unchecked {
+            playerStats[msg.sender].gamesJoined++;
+            playerStats[msg.sender].totalVolume += game.betAmount;
+        }
+        
+        emit GameJoined(_gameId, msg.sender, block.timestamp);
         
         _resolveGame(_gameId);
     }
@@ -76,9 +155,13 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
         require(!game.resolved, "Game already resolved");
 
         game.resolved = true;
+        
+        // Remove from active games
+        _removeFromActiveGames(_gameId);
+        
         game.player1.transfer(game.betAmount);
         
-        emit GameCancelled(_gameId, msg.sender);
+        emit GameCancelled(_gameId, msg.sender, block.timestamp);
     }
 
     function withdrawExpired(uint256 _gameId) external nonReentrant {
@@ -90,7 +173,13 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
         require(!game.resolved, "Already resolved");
 
         game.resolved = true;
+        
+        // Remove from active games
+        _removeFromActiveGames(_gameId);
+        
         game.player1.transfer(game.betAmount);
+        
+        emit GameExpired(_gameId, block.timestamp);
     }
 
     function _resolveGame(uint256 _gameId) internal {
@@ -111,6 +200,9 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
         game.winner = player1Wins ? game.player1 : game.player2;
         game.resolved = true;
         
+        // Remove from active games
+        _removeFromActiveGames(_gameId);
+        
         uint256 totalPot = game.betAmount * 2;
         uint256 houseFee = (totalPot * HOUSE_FEE_BPS) / 10000;
         uint256 referralFee = 0;
@@ -118,70 +210,329 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
         if (game.referrer != address(0)) {
             referralFee = (totalPot * REFERRAL_FEE_BPS) / 10000;
             referralEarnings[game.referrer] += referralFee;
+            
+            unchecked {
+                referralStats[game.referrer].totalEarned += referralFee;
+                referralStats[game.referrer].gamesReferred++;
+            }
+            
             payable(game.referrer).transfer(referralFee);
-            emit ReferralReward(game.referrer, referralFee, _gameId);
+            emit ReferralReward(game.referrer, referralFee, _gameId, block.timestamp);
         }
         
         uint256 payout = totalPot - houseFee - referralFee;
+        
+        // Update global stats
+        unchecked {
+            totalGamesResolved++;
+            totalVolume += totalPot;
+        }
+        
+        // Update player stats
+        address loser = player1Wins ? game.player2 : game.player1;
+        unchecked {
+            playerStats[game.winner].gamesWon++;
+            playerStats[game.winner].totalWon += payout;
+            playerStats[loser].gamesLost++;
+        }
+        
         owner.transfer(houseFee);
         game.winner.transfer(payout);
         
-        emit GameResolved(_gameId, game.winner, result, payout);
+        emit GameResolved(_gameId, game.winner, result, payout, block.timestamp);
     }
+    
+    function _removeFromActiveGames(uint256 _gameId) internal {
+        uint256 index = gameIdToActiveIndex[_gameId];
+        uint256 lastIndex = activeGameIds.length - 1;
+        
+        if (index != lastIndex) {
+            uint256 lastGameId = activeGameIds[lastIndex];
+            activeGameIds[index] = lastGameId;
+            gameIdToActiveIndex[lastGameId] = index;
+        }
+        
+        activeGameIds.pop();
+        delete gameIdToActiveIndex[_gameId];
+    }
+
+    // ========== VIEW FUNCTIONS - OPTIMIZED ==========
 
     function getGame(uint256 _gameId) external view returns (Game memory) {
         return games[_gameId];
     }
+    
+    function getGamesBatch(uint256[] calldata _gameIds) external view returns (Game[] memory) {
+        Game[] memory result = new Game[](_gameIds.length);
+        
+        for (uint256 i = 0; i < _gameIds.length; i++) {
+            result[i] = games[_gameIds[i]];
+        }
+        
+        return result;
+    }
 
     function getOpenGames() external view returns (uint256[] memory) {
-        uint256 openCount = 0;
+        uint256 count = 0;
         
-        for (uint256 i = 0; i < gameIdCounter; i++) {
-            if (games[i].player2 == address(0) && 
-                !games[i].resolved && 
-                block.timestamp < games[i].expirationTime) {
-                openCount++;
+        for (uint256 i = 0; i < activeGameIds.length; i++) {
+            uint256 gameId = activeGameIds[i];
+            if (games[gameId].player2 == address(0) && 
+                block.timestamp < games[gameId].expirationTime) {
+                unchecked { count++; }
             }
         }
         
-        uint256[] memory openGameIds = new uint256[](openCount);
+        uint256[] memory openGameIds = new uint256[](count);
         uint256 index = 0;
         
-        for (uint256 i = 0; i < gameIdCounter; i++) {
-            if (games[i].player2 == address(0) && 
-                !games[i].resolved && 
-                block.timestamp < games[i].expirationTime) {
-                openGameIds[index] = i;
-                index++;
+        for (uint256 i = 0; i < activeGameIds.length; i++) {
+            uint256 gameId = activeGameIds[i];
+            if (games[gameId].player2 == address(0) && 
+                block.timestamp < games[gameId].expirationTime) {
+                openGameIds[index] = gameId;
+                unchecked { index++; }
             }
         }
         
         return openGameIds;
     }
-
-    function getMyGames(address _player) external view returns (uint256[] memory) {
-        uint256 myCount = 0;
-        
-        for (uint256 i = 0; i < gameIdCounter; i++) {
-            if ((games[i].player1 == _player || games[i].player2 == _player) && 
-                !games[i].resolved) {
-                myCount++;
+    
+    function getOpenGamesWithData(uint256 limit, uint256 offset) 
+        external 
+        view 
+        returns (Game[] memory gamesData, uint256 totalCount) 
+    {
+        // Count open games
+        uint256 count = 0;
+        for (uint256 i = 0; i < activeGameIds.length; i++) {
+            uint256 gameId = activeGameIds[i];
+            if (games[gameId].player2 == address(0) && 
+                block.timestamp < games[gameId].expirationTime) {
+                unchecked { count++; }
             }
         }
         
-        uint256[] memory myGameIds = new uint256[](myCount);
+        totalCount = count;
+        
+        if (offset >= count) {
+            return (new Game[](0), totalCount);
+        }
+        
+        uint256 resultSize = count - offset;
+        if (resultSize > limit) {
+            resultSize = limit;
+        }
+        
+        gamesData = new Game[](resultSize);
+        uint256 currentIndex = 0;
+        uint256 resultIndex = 0;
+        
+        for (uint256 i = 0; i < activeGameIds.length && resultIndex < resultSize; i++) {
+            uint256 gameId = activeGameIds[i];
+            if (games[gameId].player2 == address(0) && 
+                block.timestamp < games[gameId].expirationTime) {
+                if (currentIndex >= offset) {
+                    gamesData[resultIndex] = games[gameId];
+                    unchecked { resultIndex++; }
+                }
+                unchecked { currentIndex++; }
+            }
+        }
+        
+        return (gamesData, totalCount);
+    }
+
+    function getMyGames(address _player) external view returns (uint256[] memory) {
+        uint256 count = 0;
+        uint256[] storage playerGames = playerToGameIds[_player];
+        
+        for (uint256 i = 0; i < playerGames.length; i++) {
+            if (!games[playerGames[i]].resolved) {
+                unchecked { count++; }
+            }
+        }
+        
+        uint256[] memory myGameIds = new uint256[](count);
         uint256 index = 0;
         
-        for (uint256 i = 0; i < gameIdCounter; i++) {
-            if ((games[i].player1 == _player || games[i].player2 == _player) && 
-                !games[i].resolved) {
-                myGameIds[index] = i;
-                index++;
+        for (uint256 i = 0; i < playerGames.length; i++) {
+            uint256 gameId = playerGames[i];
+            if (!games[gameId].resolved) {
+                myGameIds[index] = gameId;
+                unchecked { index++; }
             }
         }
         
         return myGameIds;
     }
+    
+    function getMyGamesWithData(address _player, uint256 limit, uint256 offset) 
+        external 
+        view 
+        returns (Game[] memory gamesData, uint256 totalCount) 
+    {
+        uint256[] storage playerGames = playerToGameIds[_player];
+        
+        // Count unresolved games
+        uint256 count = 0;
+        for (uint256 i = 0; i < playerGames.length; i++) {
+            if (!games[playerGames[i]].resolved) {
+                unchecked { count++; }
+            }
+        }
+        
+        totalCount = count;
+        
+        if (offset >= count) {
+            return (new Game[](0), totalCount);
+        }
+        
+        uint256 resultSize = count - offset;
+        if (resultSize > limit) {
+            resultSize = limit;
+        }
+        
+        gamesData = new Game[](resultSize);
+        uint256 currentIndex = 0;
+        uint256 resultIndex = 0;
+        
+        for (uint256 i = 0; i < playerGames.length && resultIndex < resultSize; i++) {
+            uint256 gameId = playerGames[i];
+            if (!games[gameId].resolved) {
+                if (currentIndex >= offset) {
+                    gamesData[resultIndex] = games[gameId];
+                    unchecked { resultIndex++; }
+                }
+                unchecked { currentIndex++; }
+            }
+        }
+        
+        return (gamesData, totalCount);
+    }
+    
+    function getRecentGames(uint256 count) external view returns (Game[] memory) {
+        if (count == 0 || gameIdCounter == 0) {
+            return new Game[](0);
+        }
+        
+        uint256 resultSize = count > gameIdCounter ? gameIdCounter : count;
+        Game[] memory result = new Game[](resultSize);
+        
+        uint256 resultIndex = 0;
+        for (uint256 i = gameIdCounter; i > 0 && resultIndex < resultSize; i--) {
+            result[resultIndex] = games[i - 1];
+            unchecked { resultIndex++; }
+        }
+        
+        return result;
+    }
+    
+    function getGamesByBetRange(uint256 minBet, uint256 maxBet, uint256 limit) 
+        external 
+        view 
+        returns (Game[] memory) 
+    {
+        uint256 count = 0;
+        
+        for (uint256 i = 0; i < activeGameIds.length && count < limit; i++) {
+            uint256 gameId = activeGameIds[i];
+            Game storage game = games[gameId];
+            if (game.player2 == address(0) && 
+                !game.resolved &&
+                game.betAmount >= minBet && 
+                game.betAmount <= maxBet &&
+                block.timestamp < game.expirationTime) {
+                unchecked { count++; }
+            }
+        }
+        
+        Game[] memory result = new Game[](count);
+        uint256 index = 0;
+        
+        for (uint256 i = 0; i < activeGameIds.length && index < count; i++) {
+            uint256 gameId = activeGameIds[i];
+            Game storage game = games[gameId];
+            if (game.player2 == address(0) && 
+                !game.resolved &&
+                game.betAmount >= minBet && 
+                game.betAmount <= maxBet &&
+                block.timestamp < game.expirationTime) {
+                result[index] = game;
+                unchecked { index++; }
+            }
+        }
+        
+        return result;
+    }
+    
+    function getExpiringGames(uint256 timeWindow) external view returns (Game[] memory) {
+        uint256 deadline = block.timestamp + timeWindow;
+        uint256 count = 0;
+        
+        for (uint256 i = 0; i < activeGameIds.length; i++) {
+            uint256 gameId = activeGameIds[i];
+            Game storage game = games[gameId];
+            if (game.player2 == address(0) && 
+                !game.resolved &&
+                game.expirationTime <= deadline &&
+                block.timestamp < game.expirationTime) {
+                unchecked { count++; }
+            }
+        }
+        
+        Game[] memory result = new Game[](count);
+        uint256 index = 0;
+        
+        for (uint256 i = 0; i < activeGameIds.length && index < count; i++) {
+            uint256 gameId = activeGameIds[i];
+            Game storage game = games[gameId];
+            if (game.player2 == address(0) && 
+                !game.resolved &&
+                game.expirationTime <= deadline &&
+                block.timestamp < game.expirationTime) {
+                result[index] = game;
+                unchecked { index++; }
+            }
+        }
+        
+        return result;
+    }
+
+    // ========== STATS FUNCTIONS ==========
+    
+    function getProtocolStats() external view returns (ProtocolStats memory) {
+        return ProtocolStats({
+            totalGamesCreated: totalGamesCreated,
+            totalGamesResolved: totalGamesResolved,
+            totalVolume: totalVolume,
+            totalPlayers: totalPlayers,
+            activeGames: activeGameIds.length
+        });
+    }
+    
+    function getPlayerStats(address _player) external view returns (PlayerStats memory) {
+        return playerStats[_player];
+    }
+    
+    function getReferralStats(address _referrer) external view returns (ReferralStats memory) {
+        return referralStats[_referrer];
+    }
+    
+    function getTopPlayers(uint256 limit) external view returns (address[] memory, uint256[] memory) {
+        // Note: This is a simple implementation. For production, consider off-chain indexing
+        // This function is expensive and should be used sparingly
+        
+        address[] memory players = new address[](limit);
+        uint256[] memory volumes = new uint256[](limit);
+        
+        // This would need a more sophisticated implementation with a proper leaderboard structure
+        // For now, returning empty arrays as a placeholder
+        
+        return (players, volumes);
+    }
+
+    // ========== REFERRAL FUNCTIONS ==========
 
     function withdrawReferralEarnings() external nonReentrant {
         uint256 amount = referralEarnings[msg.sender];
@@ -189,5 +540,25 @@ contract CoinFlip is ICoinFlip, ReentrancyGuard {
         
         referralEarnings[msg.sender] = 0;
         payable(msg.sender).transfer(amount);
+        
+        emit ReferralWithdrawn(msg.sender, amount, block.timestamp);
+    }
+
+    // ========== ADMIN FUNCTIONS ==========
+    
+    function pause() external onlyOwner {
+        paused = true;
+        emit Paused(block.timestamp);
+    }
+    
+    function unpause() external onlyOwner {
+        paused = false;
+        emit Unpaused(block.timestamp);
+    }
+    
+    function emergencyWithdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        owner.transfer(balance);
+        emit EmergencyWithdraw(owner, balance, block.timestamp);
     }
 }
