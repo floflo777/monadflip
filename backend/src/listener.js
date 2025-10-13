@@ -89,7 +89,7 @@ async function handleGameResolved(event) {
       betAmount,
       payout,
       result,
-      txHash: event.log.transactionHash,
+      txHash: event.transactionHash,
       timestamp: block.timestamp
     };
 
@@ -112,7 +112,7 @@ async function handleReferralReward(event) {
       referrer,
       amount,
       gameId,
-      txHash: event.log.transactionHash,
+      txHash: event.transactionHash,
       timestamp: block.timestamp
     };
 
