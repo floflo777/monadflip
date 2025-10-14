@@ -1,21 +1,49 @@
 import { useEffect } from 'react';
+import { ethers } from 'ethers';
 
-const HISTORY_KEY = 'coinflip_history';
+const HISTORY_KEY = 'coinflip_history_v2';
 
 export const useGameHistory = (contract, account) => {
   useEffect(() => {
     if (!contract || !account) return;
 
-    const saveToHistory = (gameId, winner, result, payout, timestamp, event) => {
+    console.log('Setting up GameResolved listener for:', account);
+
+    const handleGameResolved = async (...args) => {
       try {
-        const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+        const event = args[args.length - 1];
         
-        const accountKey = account.toLowerCase();
-        if (!history[accountKey]) {
-          history[accountKey] = [];
+        const gameId = args[0];
+        const winner = args[1];
+        const result = args[2];
+        const payout = args[3];
+        
+        console.log('GameResolved event received:', {
+          gameId: gameId.toString(),
+          winner,
+          result,
+          payout: ethers.formatEther(payout)
+        });
+
+        const winnerLower = winner.toLowerCase();
+        const accountLower = account.toLowerCase();
+        
+        const game = await contract.getGame(gameId);
+        const player1Lower = game.player1.toLowerCase();
+        const player2Lower = game.player2.toLowerCase();
+        
+        if (accountLower !== player1Lower && accountLower !== player2Lower) {
+          console.log('Account not involved in this game, skipping');
+          return;
         }
 
-        const isWinner = winner.toLowerCase() === accountKey;
+        const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+        
+        if (!history[accountLower]) {
+          history[accountLower] = [];
+        }
+
+        const isWinner = winnerLower === accountLower;
         
         const gameData = {
           gameId: gameId.toString(),
@@ -26,21 +54,24 @@ export const useGameHistory = (contract, account) => {
           txHash: event.log.transactionHash
         };
 
-        const existingIndex = history[accountKey].findIndex(g => g.txHash === gameData.txHash);
+        const existingIndex = history[accountLower].findIndex(g => g.txHash === gameData.txHash);
         if (existingIndex === -1) {
-          history[accountKey] = [gameData, ...history[accountKey]].slice(0, 50);
+          history[accountLower] = [gameData, ...history[accountLower]].slice(0, 50);
           localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-          console.log('Game saved to history:', gameData);
+          console.log(' Game saved to history:', gameData);
+        } else {
+          console.log('Game already in history');
         }
       } catch (error) {
-        console.error('Error saving history:', error);
+        console.error(' Error saving history:', error);
       }
     };
 
-    contract.on('GameResolved', saveToHistory);
+    contract.on('GameResolved', handleGameResolved);
 
     return () => {
-      contract.off('GameResolved', saveToHistory);
+      console.log('Removing GameResolved listener');
+      contract.off('GameResolved', handleGameResolved);
     };
   }, [contract, account]);
 };
@@ -50,13 +81,27 @@ export const getLocalHistory = (account) => {
   
   try {
     const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
-    return history[account.toLowerCase()] || [];
+    const userHistory = history[account.toLowerCase()] || [];
+    console.log('Loading history for', account, ':', userHistory.length, 'games');
+    return userHistory;
   } catch (error) {
     console.error('Error loading history:', error);
     return [];
   }
 };
 
-export const clearHistory = () => {
-  localStorage.removeItem(HISTORY_KEY);
+export const migrateHistory = () => {
+  const oldKey = 'coinflip_history';
+  const newKey = 'coinflip_history_v2';
+  
+  try {
+    const oldHistory = localStorage.getItem(oldKey);
+    if (oldHistory && !localStorage.getItem(newKey)) {
+      localStorage.setItem(newKey, oldHistory);
+    }
+    localStorage.removeItem(oldKey);
+    console.log('History migrated');
+  } catch (error) {
+    console.error('Migration error:', error);
+  }
 };

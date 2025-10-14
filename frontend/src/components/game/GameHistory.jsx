@@ -49,7 +49,7 @@ export default function GameHistory() {
                 </div>
                 {MONAD_EXPLORER && (
                   <a
-                    href={`${MONAD_EXPLORER}/tx/${game.txHash}`}
+                    href={`https://monad-testnet.socialscan.io/tx/${game.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-primary hover:text-accent"
