@@ -1,5 +1,9 @@
 # MonadFlip
 
+[![CI](https://github.com/floflo777/monadflip/actions/workflows/ci.yml/badge.svg)](https://github.com/floflo777/monadflip/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.26-blue)](https://soliditylang.org/)
+
 A decentralized peer-to-peer coin flip game built on the Monad blockchain. Players can create or join games, betting on heads or tails with transparent on-chain randomness.
 
 ## Features
