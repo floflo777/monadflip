@@ -32,3 +32,7 @@ jobs:
 
       - name: Compile contracts
         run: npx hardhat compile
+        env:
+          MONAD_RPC_URL: "https://testnet.monad.xyz"
+          PRIVATE_KEY: "0x0000000000000000000000000000000000000000000000000000000000000001"
+          CHAIN_ID: "10143"
